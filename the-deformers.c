@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 GLFWwindow* window;
+int win_width, win_height;
 
 int main(int argc, char** argv)
 {
@@ -20,7 +21,11 @@ int main(int argc, char** argv)
     glfwMakeContextCurrent(window);
     while (!glfwWindowShouldClose(window))
     {
+        glfwGetFramebufferSize(window, &win_width, &win_height);
+        glViewport(0, 0, win_width, win_height);
+        
         glClear(GL_COLOR_BUFFER_BIT);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
