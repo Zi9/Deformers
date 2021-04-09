@@ -8,9 +8,6 @@
 #include <stdio.h>
 
 GLFWwindow* window;
-int win_width, win_height;
-
-
 
 char PCX_defaultPalette[48] = {
 	0x00, 0x00, 0x00,    0x00, 0x00, 0x80,    0x00, 0x80, 0x00,
@@ -134,8 +131,7 @@ int main(int argc, char** argv)
     }
     glfwMakeContextCurrent(window);
 
-    glfwGetFramebufferSize(window, &win_width, &win_height);
-    glViewport(0, 0, win_width, win_height);
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     while (!glfwWindowShouldClose(window))
     {
         onInput(window);
