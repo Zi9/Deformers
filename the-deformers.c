@@ -6,6 +6,7 @@
 #define TEREP_COLORMAP_FILE "col.pcx"
 #define TEREP_MAPTEX_FILE "maptex.pcx"
 #define TEREP_MAPSZ 256
+#define TEREP_TEXSZ 256
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -15,7 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// IMAGE STUFF
 struct __attribute__((__packed__)) RGBColor {
     uint8_t red;
     uint8_t green;
@@ -61,6 +61,7 @@ struct __attribute__((__packed__)) PCXHeader {
 
 struct Image* image_load_pcx(const char* path)
 {
+    // !NOTE: Reads default terep images as 256x256
     struct Image* img = malloc(sizeof(struct Image));
     FILE* fp = fopen(path, "r");
     if (fp == NULL) {
@@ -80,16 +81,11 @@ struct Image* image_load_pcx(const char* path)
     assert(hdr->bitsPerPixel == 8);
     assert(hdr->nplanes == 1);
 
-    // printf("\nFile: %s\n", path);
-    // printf("Ver:%i Enc:%i Bpp:%i DPI:%ix%i Reserved:%i NPlanes:%i BPL:%i PalInfo:%i\n",
-    //        hdr->version, hdr->encoding, hdr->bitsPerPixel, hdr->hDPI, hdr->vDPI,
-    //        hdr->reserved, hdr->nplanes, hdr->bytesPerLine, hdr->paletteInfo);
-
-    img->width = hdr->xMax - hdr->xMin + 1;
-    img->height = hdr->yMax - hdr->yMin + 1;
-    uint32_t bufsz = hdr->bytesPerLine * hdr->nplanes * img->height;
-    // printf("Bufsz = %i\n", bufsz);
-
+    // !NOTE: 256x256 image is actually created
+    uint32_t width = hdr->xMax - hdr->xMin + 1;
+    uint32_t height = hdr->yMax - hdr->yMin + 1;
+    assert(width >= 256);
+    uint32_t bufsz = hdr->bytesPerLine * hdr->nplanes * height;
     uint8_t* buf = malloc(bufsz);
     uint8_t in;
     uint8_t repe;
@@ -106,15 +102,29 @@ struct Image* image_load_pcx(const char* path)
             bufi++;
         }
     }
-    img->indices = buf;
+    // !NOTE: indexbuf will contain resized pixel index array
+    uint8_t* indexbuf = malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof(uint8_t));
+    if (height >= TEREP_TEXSZ) {
+        for (int y = 0; y < TEREP_TEXSZ; y++) {
+            memcpy(indexbuf + (y * TEREP_TEXSZ), buf + (y * width), TEREP_TEXSZ * sizeof(uint8_t));
+        }
+    } else {
+        uint32_t wrote_pixels = 0;
+        for (int y = 0; y < height; y++) {
+            memcpy(indexbuf + (y * TEREP_TEXSZ), buf + (y * width), TEREP_TEXSZ * sizeof(uint8_t));
+            wrote_pixels += TEREP_TEXSZ * sizeof(uint8_t);
+        }
+        memset(indexbuf + wrote_pixels, 0xFF, (TEREP_TEXSZ * TEREP_TEXSZ * sizeof(uint8_t)) - wrote_pixels);
+    }
+    img->indices = indexbuf;
 
     uint8_t palmagic;
     fread(&palmagic, sizeof(palmagic), 1, fp);
     assert(palmagic == 12);
     assert(fread(&img->palette, PCX_PALETTE_SIZE, 1, fp) == 1);
 
-    img->pixels = malloc(img->width * img->height * sizeof(struct RGBAColor));
-    for (int i = 0; i < img->width * img->height; i++) {
+    img->pixels = malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof(struct RGBAColor));
+    for (int i = 0; i < TEREP_TEXSZ * TEREP_TEXSZ; i++) {
         img->pixels[i].red = img->palette[img->indices[i]].red;
         img->pixels[i].green = img->palette[img->indices[i]].green;
         img->pixels[i].blue = img->palette[img->indices[i]].blue;
@@ -125,8 +135,12 @@ struct Image* image_load_pcx(const char* path)
         }
     }
 
-    fclose(fp);
+    free(buf);
     free(hdr);
+    fclose(fp);
+
+    img->width = TEREP_TEXSZ;
+    img->height = TEREP_TEXSZ;
 
     return img;
 }
@@ -136,24 +150,23 @@ void image_unload(struct Image* img)
     free(img->pixels);
     free(img);
 }
-// ----------------------------------------------------------------------------
 
-// MAP STUFF
 struct TerepMap {
-    // *NOTE: Only square maps
-    uint16_t size;
+    // *NOTE: Add mesh, material and shader stuff in here too m8
+    uint16_t xSize;
+    uint16_t ySize;
     struct Image* heightmap;
     struct Image* colormap;
     struct Image* texture;
 };
-
 struct TerepMap* map_load()
 {
     struct TerepMap* map = malloc(sizeof(struct TerepMap));
     map->colormap = image_load_pcx(TEREP_COLORMAP_FILE);
     map->heightmap = image_load_pcx(TEREP_HEIGHTMAP_FILE);
     map->texture = image_load_pcx(TEREP_MAPTEX_FILE);
-    map->size = TEREP_MAPSZ;
+    map->xSize = TEREP_MAPSZ;
+    map->ySize = TEREP_MAPSZ;
     return map;
 }
 void map_unload(struct TerepMap* map)
