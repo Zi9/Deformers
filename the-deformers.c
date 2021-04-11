@@ -18,6 +18,7 @@
 GLFWwindow* window;
 
 
+// IMAGE STUFF
 struct __attribute__((__packed__)) RGBColor {
     uint8_t red;
     uint8_t green;
@@ -55,7 +56,7 @@ struct __attribute__((__packed__)) PCXHeader {
     uint16_t paletteInfo;
 };
 
-struct Image* load_image_pcx(const char* path)
+struct Image* image_load_pcx(const char* path)
 {
     struct Image* img = malloc(sizeof(struct Image));
     FILE* fp = fopen(path, "r");
@@ -127,22 +128,16 @@ struct Image* load_image_pcx(const char* path)
 
     return img;
 }
-void unload_image(struct Image* img)
+void image_unload(struct Image* img)
 {
     free(img->indices);
     free(img->pixels);
     free(img);
 }
+// ----------------------------------------------------------------------------
 
-void test()
-{
-    struct Image* a = load_image_pcx(TEREP_COLORMAP_FILE);
-    unload_image(a);
-    // PCX_load_image_as_texture(TEREP_HEIGHTMAP_FILE);
-    // PCX_load_image_as_texture(TEREP_MAPTEX_FILE);
-}
-
-struct map {
+// MAP STUFF
+struct TerepMap {
     // *NOTE: Only square maps
     uint16_t size;
     struct Image* heightmap;
@@ -150,20 +145,27 @@ struct map {
     struct Image* texture;
 };
 
-struct map* map_load()
+struct TerepMap* map_load()
 {
-    struct map* map = malloc(sizeof(struct map));
+    struct TerepMap* map = malloc(sizeof(struct TerepMap));
+    map->colormap = image_load_pcx(TEREP_COLORMAP_FILE);
+    map->heightmap = image_load_pcx(TEREP_HEIGHTMAP_FILE);
+    map->texture = image_load_pcx(TEREP_MAPTEX_FILE);
+    map->size = TEREP_MAPSZ;
     return map;
 }
-void map_unload(struct map* map)
+void map_unload(struct TerepMap* map)
 {
+    image_unload(map->colormap);
+    image_unload(map->heightmap);
+    image_unload(map->texture);
     free(map);
 }
-void map_render(struct map* map)
+void map_render(struct TerepMap* map)
 {
     // TODO: IMPLEMENT ME
 }
-
+// ----------------------------------------------------------------------------
 
 
 void onInput(GLFWwindow* window)
@@ -182,8 +184,10 @@ void onRender()
 
 int main(int argc, char** argv)
 {
-    test();
+    struct TerepMap* a = map_load();
+    map_unload(a);
     return 0;
+
     if (!glfwInit())
         return -1;
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
