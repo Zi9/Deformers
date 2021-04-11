@@ -24,12 +24,18 @@ struct __attribute__((__packed__)) RGBColor {
     uint8_t green;
     uint8_t blue;
 };
+struct RGBAColor {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+    uint8_t alpha;
+};
 struct Image {
     uint32_t width;
     uint32_t height;
     uint8_t* indices;
     struct RGBColor palette[256];
-    struct RGBColor* pixels;
+    struct RGBAColor* pixels;
 };
 
 #define PCX_HEADER_SIZE 128
@@ -115,12 +121,20 @@ struct Image* image_load_pcx(const char* path)
     assert(palmagic == 12);
     assert(fread(&img->palette, PCX_PALETTE_SIZE, 1, fp) == 1);
 
-    img->pixels = malloc(img->width*img->height*sizeof(struct RGBColor));
+    img->pixels = malloc(img->width*img->height*sizeof(struct RGBAColor));
     for (int i = 0; i < img->width*img->height; i++)
     {
         img->pixels[i].red = img->palette[img->indices[i]].red;
         img->pixels[i].green = img->palette[img->indices[i]].green;
         img->pixels[i].blue = img->palette[img->indices[i]].blue;
+        if (img->indices[i] == 255)
+        {
+            img->pixels[i].alpha = 255;
+        }
+        else
+        {
+            img->pixels[i].alpha = 0;
+        }
     }
 
     fclose(fp);
