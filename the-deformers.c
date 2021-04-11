@@ -15,8 +15,6 @@
 #include <string.h>
 #include <assert.h>
 
-GLFWwindow* window;
-
 
 // IMAGE STUFF
 struct __attribute__((__packed__)) RGBColor {
@@ -181,14 +179,18 @@ void map_render(struct TerepMap* map)
 }
 // ----------------------------------------------------------------------------
 
-struct TerepMap* a;
+
+
+GLFWwindow* window;
+struct TerepMap* current_map;
+
 void onGameStart()
 {
-    a = map_load();
+    current_map = map_load();
 }
 void onGameStop()
 {
-    map_unload(a);
+    map_unload(current_map);
 }
 void onInput(GLFWwindow* window)
 {
@@ -203,7 +205,7 @@ void onRender()
 {
     glRasterPos2f(-1,1);
     glPixelZoom(1, -1);
-    glDrawPixels(a->colormap->width, a->colormap->height, GL_RGBA, GL_UNSIGNED_BYTE, a->colormap->pixels);
+    glDrawPixels(current_map->colormap->width, current_map->colormap->height, GL_RGBA, GL_UNSIGNED_BYTE, current_map->colormap->pixels);
 }
 
 int main(int argc, char** argv)
@@ -218,12 +220,12 @@ int main(int argc, char** argv)
         return -1;
     }
     glfwMakeContextCurrent(window);
-
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     onGameStart();
     while (!glfwWindowShouldClose(window))
     {
         onInput(window);
+
         onUpdate();
 
         glClear(GL_COLOR_BUFFER_BIT);
