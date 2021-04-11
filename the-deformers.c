@@ -209,10 +209,17 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, NULL, NULL);
     if (!window) {
+        printf("Could not create window\n");
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
+    glewExperimental = true;
+    if (glewInit() != GLEW_OK) {
+        printf("Could not initialize glew\n:");
+        glfwTerminate();
+        return -1;
+    }
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     onGameStart();
     while (!glfwWindowShouldClose(window)) {
