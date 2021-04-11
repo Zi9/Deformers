@@ -81,7 +81,6 @@ struct Image* image_load_pcx(const char* path)
     assert(hdr->bitsPerPixel == 8);
     assert(hdr->nplanes == 1);
 
-    // !NOTE: 256x256 image is actually created
     uint32_t width = hdr->xMax - hdr->xMin + 1;
     uint32_t height = hdr->yMax - hdr->yMin + 1;
     assert(width >= 256);
@@ -103,6 +102,8 @@ struct Image* image_load_pcx(const char* path)
         }
     }
     // !NOTE: indexbuf will contain resized pixel index array
+    // *This implementation is kinda hackish
+
     uint8_t* indexbuf = malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof(uint8_t));
     if (height >= TEREP_TEXSZ) {
         for (int y = 0; y < TEREP_TEXSZ; y++) {
