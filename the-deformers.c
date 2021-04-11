@@ -16,6 +16,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char* vertexShader = "#version 330 core\n"
+                           "layout (location = 0) in vec3 apos;\n"
+                           "void main(){\n"
+                           "   gl_Position = vec4(apos.x, apos.y, apos.z, 1.0);\n"
+                           "}";
+
+const char* fragmentShader = "#version 330 core\n"
+                             "out vec3 color;\n"
+                             "void main(){\n"
+                             "   color = vec3(1.0, 0.0, 0.0);\n"
+                             "}";
+
 struct __attribute__((__packed__)) RGBColor {
     uint8_t red;
     uint8_t green;
@@ -186,8 +198,54 @@ void map_render(struct TerepMap* map)
 GLFWwindow* window;
 struct TerepMap* current_map;
 
-void onGameStart() { current_map = map_load(); }
-void onGameStop() { map_unload(current_map); }
+GLuint VertexArrayID;
+static const GLfloat g_vertex_buffer_data[] = {
+    -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+};
+GLuint vertexbuffer;
+GLuint shader;
+
+GLuint load_shaders(const char* vertexShader, const char* fragmentShader)
+{
+    GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+    GLuint fragmetShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(vertexShaderID, 1, &vertexShader, NULL);
+    glCompileShader(vertexShaderID);
+    glShaderSource(fragmetShaderID, 1, &fragmentShader, NULL);
+    glCompileShader(fragmetShaderID);
+    GLuint ProgramID = glCreateProgram();
+    glAttachShader(ProgramID, vertexShaderID);
+    glAttachShader(ProgramID, fragmetShaderID);
+    glLinkProgram(ProgramID);
+
+    glDetachShader(ProgramID, vertexShaderID);
+    glDetachShader(ProgramID, fragmetShaderID);
+
+    glDeleteShader(vertexShaderID);
+    glDeleteShader(fragmetShaderID);
+    return ProgramID;
+}
+
+void onGameStart()
+{
+    glGenVertexArrays(1, &VertexArrayID);
+    glBindVertexArray(VertexArrayID);
+    glGenBuffers(1, &vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+    shader = load_shaders(vertexShader, fragmentShader);
+
+    // current_map = map_load();
+}
+void onGameStop()
+{
+    glDeleteProgram(shader);
+    glDeleteBuffers(1, &vertexbuffer);
+    glDeleteVertexArrays(1, &VertexArrayID);
+
+    // map_unload(current_map);
+}
 void onInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
@@ -196,10 +254,12 @@ void onInput(GLFWwindow* window)
 void onUpdate() {}
 void onRender()
 {
-    glRasterPos2f(-1, 1);
-    glPixelZoom(1, -1);
-    glDrawPixels(current_map->colormap->width, current_map->colormap->height, GL_RGBA, GL_UNSIGNED_BYTE,
-                 current_map->colormap->pixels);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glUseProgram(shader);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDisableVertexAttribArray(0);
 }
 
 int main(int argc, char** argv)
@@ -207,6 +267,9 @@ int main(int argc, char** argv)
     if (!glfwInit())
         return -1;
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, NULL, NULL);
     if (!window) {
         printf("Could not create window\n");
