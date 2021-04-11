@@ -181,7 +181,15 @@ void map_render(struct TerepMap* map)
 }
 // ----------------------------------------------------------------------------
 
-
+struct TerepMap* a;
+void onGameStart()
+{
+    a = map_load();
+}
+void onGameStop()
+{
+    map_unload(a);
+}
 void onInput(GLFWwindow* window)
 {
     if(glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
@@ -193,15 +201,13 @@ void onUpdate()
 }
 void onRender()
 {
-
+    glRasterPos2f(-1,1);
+    glPixelZoom(1, -1);
+    glDrawPixels(a->colormap->width, a->colormap->height, GL_RGBA, GL_UNSIGNED_BYTE, a->colormap->pixels);
 }
 
 int main(int argc, char** argv)
 {
-    struct TerepMap* a = map_load();
-    map_unload(a);
-    return 0;
-
     if (!glfwInit())
         return -1;
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
@@ -214,14 +220,18 @@ int main(int argc, char** argv)
     glfwMakeContextCurrent(window);
 
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    onGameStart();
     while (!glfwWindowShouldClose(window))
     {
         onInput(window);
-        glClear(GL_COLOR_BUFFER_BIT);
+        onUpdate();
 
+        glClear(GL_COLOR_BUFFER_BIT);
+        onRender();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    onGameStop();
     glfwTerminate();
     return 0;
 }
