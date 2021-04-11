@@ -2,23 +2,38 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
+#define TEREP_HEIGHTMAP_FILE "map.pcx"
+#define TEREP_COLORMAP_FILE "col.pcx"
+#define TEREP_MAPTEX_FILE "maptex.pcx"
+#define TEREP_MAPSZ 256
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
 GLFWwindow* window;
 
-char PCX_defaultPalette[48] = {
-	0x00, 0x00, 0x00,    0x00, 0x00, 0x80,    0x00, 0x80, 0x00,
-	0x00, 0x80, 0x80,    0x80, 0x00, 0x00,    0x80, 0x00, 0x80,
-	0x80, 0x80, 0x00,    0x80, 0x80, 0x80,    0xc0, 0xc0, 0xc0,
-	0x00, 0x00, 0xff,    0x00, 0xff, 0x00,    0x00, 0xff, 0xff,
-	0xff, 0x00, 0x00,    0xff, 0x00, 0xff,    0xff, 0xff, 0x00,
-	0xff, 0xff, 0xff 
+
+struct __attribute__((__packed__)) RGBColor {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+};
+struct Image {
+    uint32_t width;
+    uint32_t height;
+    uint8_t* indices;
+    struct RGBColor palette[256];
+    struct RGBColor* pixels;
 };
 
-struct PCXFile {
+#define PCX_HEADER_SIZE 128
+#define PCX_PALETTE_SIZE 768
+struct __attribute__((__packed__)) PCXHeader {
     uint8_t identifier;
     uint8_t version;
     uint8_t encoding;
@@ -29,74 +44,125 @@ struct PCXFile {
     uint16_t xMax;
     uint16_t yMax;
 
-    int width;
-    int height;
-
     uint16_t hDPI;
     uint16_t vDPI;
 
-    uint8_t colmap[48];
+    struct RGBColor colmap[16];
 
     uint8_t reserved;
     uint8_t nplanes;
     uint16_t bytesPerLine;
     uint16_t paletteInfo;
-    uint16_t hScreenSize;
-    uint16_t vScreenSize;
 };
 
-void PCX_load_header(FILE* fp, struct PCXFile* pcx)
+struct Image* load_image_pcx(const char* path)
 {
-    fread(&(pcx->identifier), sizeof(pcx->identifier), 1, fp);
-    fread(&(pcx->version), sizeof(pcx->version), 1, fp);
-    fread(&(pcx->encoding), sizeof(pcx->encoding), 1, fp);
-    fread(&(pcx->bitsPerPixel), sizeof(pcx->bitsPerPixel), 1, fp);
-
-    fread(&(pcx->xMin), sizeof(pcx->xMin), 1, fp);
-    fread(&(pcx->yMin), sizeof(pcx->yMin), 1, fp);
-    fread(&(pcx->xMax), sizeof(pcx->xMax), 1, fp);
-    fread(&(pcx->yMax), sizeof(pcx->yMax), 1, fp);
-
-    pcx->width = pcx->xMax - pcx->xMin + 1;
-    pcx->height = pcx->yMax - pcx->yMin + 1;
-
-    fread(&(pcx->hDPI), sizeof(pcx->hDPI), 1, fp);
-    fread(&(pcx->vDPI), sizeof(pcx->vDPI), 1, fp);
-
-    for (int i=0; i<48; i++)
-    {
-        fread(&(pcx->colmap[i]), sizeof(pcx->colmap[0]), 1, fp);
-    }
-    
-    fread(&(pcx->reserved), sizeof(pcx->reserved), 1, fp);
-    fread(&(pcx->nplanes), sizeof(pcx->nplanes), 1, fp);
-    fread(&(pcx->bytesPerLine), sizeof(pcx->bytesPerLine), 1, fp);
-    fread(&(pcx->paletteInfo), sizeof(pcx->paletteInfo), 1, fp);
-    fread(&(pcx->hScreenSize), sizeof(pcx->hScreenSize), 1, fp);
-    fread(&(pcx->vScreenSize), sizeof(pcx->vScreenSize), 1, fp);
-}
-
-void PCX_load_image(const char* path)
-{
+    struct Image* img = malloc(sizeof(struct Image));
     FILE* fp = fopen(path, "r");
     if (fp == NULL)
     {
         printf("Unable to open PCX image %s for reading\n", path);
-        return;
+        return NULL;
     }
-    struct PCXFile pcx = {0};
-    PCX_load_header(fp, &pcx);
+    struct PCXHeader* hdr = (struct PCXHeader*)malloc(PCX_HEADER_SIZE);
+    assert(fread(hdr, PCX_HEADER_SIZE, 1, fp) == 1);
+    if (hdr->identifier != 0x0A)
+    {
+        fclose(fp);
+        free(hdr);
+        printf("%s is not a valid pcx file\n", path);
+        return NULL;
+    }
 
+    assert(hdr->encoding == 1);
+    assert(hdr->bitsPerPixel == 8);
+    assert(hdr->nplanes == 1);
 
-    printf("Manufac:%i Ver:%i Enc:%i Bpp:%i\n", pcx.identifier, pcx.version, pcx.encoding, pcx.bitsPerPixel);
-    printf("Width:%i Height:%i\n", pcx.width, pcx.height);
-    printf("DPI:%ix%i\n", pcx.hDPI, pcx.vDPI);
-    printf("Reserved:%i NPlanes:%i BPL:%i PalInfo:%i\n", pcx.reserved, pcx.nplanes, pcx.bytesPerLine, pcx.paletteInfo);
-    printf("ScreenSize:%ix%i\n", pcx.hScreenSize, pcx.vScreenSize);
+    // printf("\nFile: %s\n", path);
+    // printf("Ver:%i Enc:%i Bpp:%i DPI:%ix%i Reserved:%i NPlanes:%i BPL:%i PalInfo:%i\n",
+    //        hdr->version, hdr->encoding, hdr->bitsPerPixel, hdr->hDPI, hdr->vDPI,
+    //        hdr->reserved, hdr->nplanes, hdr->bytesPerLine, hdr->paletteInfo);
+
+    img->width = hdr->xMax - hdr->xMin + 1;
+    img->height = hdr->yMax - hdr->yMin + 1;
+    uint32_t bufsz = hdr->bytesPerLine * hdr->nplanes * img->height;
+    // printf("Bufsz = %i\n", bufsz);
+
+    uint8_t* buf = malloc(bufsz);
+    uint8_t in;
+    uint8_t repe;
+    for (uint32_t bufi = 0; bufi < bufsz;)
+    {
+        if (fread(&in, sizeof(in), 1, fp) == 0) break;
+        if ((0xC0 & in) == 0xC0)
+        {
+            repe = 0x3F & in;
+            assert(fread(&in, sizeof(in), 1, fp) != 0);
+            memset(buf+bufi, in, repe);
+            bufi += repe;
+        }
+        else
+        {
+            *(buf+bufi) = in;
+            bufi++;
+        }
+    }
+    img->indices = buf;
+
+    uint8_t palmagic;
+    fread(&palmagic, sizeof(palmagic), 1, fp);
+    assert(palmagic == 12);
+    assert(fread(&img->palette, PCX_PALETTE_SIZE, 1, fp) == 1);
+
+    img->pixels = malloc(img->width*img->height*sizeof(struct RGBColor));
+    for (int i = 0; i < img->width*img->height; i++)
+    {
+        img->pixels[i].red = img->palette[img->indices[i]].red;
+        img->pixels[i].green = img->palette[img->indices[i]].green;
+        img->pixels[i].blue = img->palette[img->indices[i]].blue;
+    }
 
     fclose(fp);
+    free(hdr);
+
+    return img;
+}
+void unload_image(struct Image* img)
+{
+    free(img->indices);
+    free(img->pixels);
+    free(img);
 }
 
+void test()
+{
+    struct Image* a = load_image_pcx(TEREP_COLORMAP_FILE);
+    unload_image(a);
+    // PCX_load_image_as_texture(TEREP_HEIGHTMAP_FILE);
+    // PCX_load_image_as_texture(TEREP_MAPTEX_FILE);
+}
+
+struct map {
+    // *NOTE: Only square maps
+    uint16_t size;
+    struct Image* heightmap;
+    struct Image* colormap;
+    struct Image* texture;
+};
+
+struct map* map_load()
+{
+    struct map* map = malloc(sizeof(struct map));
+    return map;
+}
+void map_unload(struct map* map)
+{
+    free(map);
+}
+void map_render(struct map* map)
+{
+    // TODO: IMPLEMENT ME
+}
 
 
 
@@ -105,12 +171,10 @@ void onInput(GLFWwindow* window)
     if(glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
-
 void onUpdate()
 {
 
 }
-
 void onRender()
 {
 
@@ -118,7 +182,7 @@ void onRender()
 
 int main(int argc, char** argv)
 {
-    PCX_load_image("test.pcx");
+    test();
     return 0;
     if (!glfwInit())
         return -1;
