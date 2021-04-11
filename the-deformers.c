@@ -9,12 +9,11 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-
 
 // IMAGE STUFF
 struct __attribute__((__packed__)) RGBColor {
@@ -64,15 +63,13 @@ struct Image* image_load_pcx(const char* path)
 {
     struct Image* img = malloc(sizeof(struct Image));
     FILE* fp = fopen(path, "r");
-    if (fp == NULL)
-    {
+    if (fp == NULL) {
         printf("Unable to open PCX image %s for reading\n", path);
         return NULL;
     }
     struct PCXHeader* hdr = (struct PCXHeader*)malloc(PCX_HEADER_SIZE);
     assert(fread(hdr, PCX_HEADER_SIZE, 1, fp) == 1);
-    if (hdr->identifier != 0x0A)
-    {
+    if (hdr->identifier != 0x0A) {
         fclose(fp);
         free(hdr);
         printf("%s is not a valid pcx file\n", path);
@@ -96,19 +93,16 @@ struct Image* image_load_pcx(const char* path)
     uint8_t* buf = malloc(bufsz);
     uint8_t in;
     uint8_t repe;
-    for (uint32_t bufi = 0; bufi < bufsz;)
-    {
-        if (fread(&in, sizeof(in), 1, fp) == 0) break;
-        if ((0xC0 & in) == 0xC0)
-        {
+    for (uint32_t bufi = 0; bufi < bufsz;) {
+        if (fread(&in, sizeof(in), 1, fp) == 0)
+            break;
+        if ((0xC0 & in) == 0xC0) {
             repe = 0x3F & in;
             assert(fread(&in, sizeof(in), 1, fp) != 0);
-            memset(buf+bufi, in, repe);
+            memset(buf + bufi, in, repe);
             bufi += repe;
-        }
-        else
-        {
-            *(buf+bufi) = in;
+        } else {
+            *(buf + bufi) = in;
             bufi++;
         }
     }
@@ -119,18 +113,14 @@ struct Image* image_load_pcx(const char* path)
     assert(palmagic == 12);
     assert(fread(&img->palette, PCX_PALETTE_SIZE, 1, fp) == 1);
 
-    img->pixels = malloc(img->width*img->height*sizeof(struct RGBAColor));
-    for (int i = 0; i < img->width*img->height; i++)
-    {
+    img->pixels = malloc(img->width * img->height * sizeof(struct RGBAColor));
+    for (int i = 0; i < img->width * img->height; i++) {
         img->pixels[i].red = img->palette[img->indices[i]].red;
         img->pixels[i].green = img->palette[img->indices[i]].green;
         img->pixels[i].blue = img->palette[img->indices[i]].blue;
-        if (img->indices[i] == 255)
-        {
+        if (img->indices[i] == 255) {
             img->pixels[i].alpha = 255;
-        }
-        else
-        {
+        } else {
             img->pixels[i].alpha = 0;
         }
     }
@@ -179,33 +169,23 @@ void map_render(struct TerepMap* map)
 }
 // ----------------------------------------------------------------------------
 
-
-
 GLFWwindow* window;
 struct TerepMap* current_map;
 
-void onGameStart()
-{
-    current_map = map_load();
-}
-void onGameStop()
-{
-    map_unload(current_map);
-}
+void onGameStart() { current_map = map_load(); }
+void onGameStop() { map_unload(current_map); }
 void onInput(GLFWwindow* window)
 {
-    if(glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
-void onUpdate()
-{
-
-}
+void onUpdate() {}
 void onRender()
 {
-    glRasterPos2f(-1,1);
+    glRasterPos2f(-1, 1);
     glPixelZoom(1, -1);
-    glDrawPixels(current_map->colormap->width, current_map->colormap->height, GL_RGBA, GL_UNSIGNED_BYTE, current_map->colormap->pixels);
+    glDrawPixels(current_map->colormap->width, current_map->colormap->height, GL_RGBA, GL_UNSIGNED_BYTE,
+                 current_map->colormap->pixels);
 }
 
 int main(int argc, char** argv)
@@ -214,16 +194,14 @@ int main(int argc, char** argv)
         return -1;
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, NULL, NULL);
-    if (!window)
-    {
+    if (!window) {
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     onGameStart();
-    while (!glfwWindowShouldClose(window))
-    {
+    while (!glfwWindowShouldClose(window)) {
         onInput(window);
 
         onUpdate();
