@@ -1,5 +1,5 @@
 #define WINDOW_TITLE "The Deformers"
-#define WINDOW_WIDTH 800
+#define WINDOW_WIDTH 960
 #define WINDOW_HEIGHT 600
 
 #define TEREP_HEIGHTMAP_FILE "map.pcx"
@@ -16,17 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char* vertexShader = "#version 330 core\n"
-                           "layout (location = 0) in vec3 apos;\n"
-                           "void main(){\n"
-                           "   gl_Position = vec4(apos.x, apos.y, apos.z, 1.0);\n"
-                           "}";
-
-const char* fragmentShader = "#version 330 core\n"
-                             "out vec3 color;\n"
-                             "void main(){\n"
-                             "   color = vec3(1.0, 0.0, 0.0);\n"
-                             "}";
 
 struct __attribute__((__packed__)) RGBColor {
     uint8_t red;
@@ -164,48 +153,8 @@ void image_unload(struct Image* img)
     free(img);
 }
 
-struct TerepMap {
-    // *NOTE: Add mesh, material and shader stuff in here too m8
-    uint16_t xSize;
-    uint16_t ySize;
-    struct Image* heightmap;
-    struct Image* colormap;
-    struct Image* texture;
-};
-struct TerepMap* map_load()
-{
-    struct TerepMap* map = malloc(sizeof(struct TerepMap));
-    map->colormap = image_load_pcx(TEREP_COLORMAP_FILE);
-    map->heightmap = image_load_pcx(TEREP_HEIGHTMAP_FILE);
-    map->texture = image_load_pcx(TEREP_MAPTEX_FILE);
-    map->xSize = TEREP_MAPSZ;
-    map->ySize = TEREP_MAPSZ;
-    return map;
-}
-void map_unload(struct TerepMap* map)
-{
-    image_unload(map->colormap);
-    image_unload(map->heightmap);
-    image_unload(map->texture);
-    free(map);
-}
-void map_render(struct TerepMap* map)
-{
-    // TODO: IMPLEMENT ME
-}
-// ----------------------------------------------------------------------------
-
-GLFWwindow* window;
-struct TerepMap* current_map;
-
-GLuint VertexArrayID;
-static const GLfloat g_vertex_buffer_data[] = {
-    -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-};
-GLuint vertexbuffer;
-GLuint shader;
-
-GLuint load_shaders(const char* vertexShader, const char* fragmentShader)
+// TODO: Add error checking to this
+GLuint compile_shader(const char* vertexShader, const char* fragmentShader)
 {
     GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
     GLuint fragmetShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -226,25 +175,108 @@ GLuint load_shaders(const char* vertexShader, const char* fragmentShader)
     return ProgramID;
 }
 
+
+
+
+const char* mapVertexShader = "#version 330 core\n"
+                              "layout (location = 0) in vec3 apos;\n"
+                              "layout (location = 1) in vec2 UVin;\n"
+                              "out vec2 UV;\n"
+                              "uniform mat4 MVP;\n"
+                              "void main() {\n"
+                              "   gl_Position = MVP * vec4(apos, 1);\n"
+                              "   UV = UVin;\n"
+                              "}";
+
+const char* mapFragmentShader = "#version 330 core\n"
+                                "in vec2 UV;\n"
+                                "out vec3 color;\n"
+                                "uniform sampler2D texSamp;\n"
+                                "void main() {\n"
+                                "   color = texture(texSamp, UV).rgb;\n"
+                                "}";
+
+struct Map {
+    // *NOTE: Add mesh, material and shader stuff in here too m8
+    uint16_t xSize;
+    uint16_t ySize;
+    struct Image* heightmap;
+    struct Image* colormap;
+    struct Image* texture;
+
+    GLuint vao;
+    GLuint vbo;
+    GLuint shader;
+    GLuint glTex;
+};
+static const GLfloat tempdatabuf[] = {
+    -0.8f,  0.8f, 0.0f,     0.0f, 1.0f,
+    -0.8f, -0.8f, 0.0f,     1.0f, 1.0f,
+     0.8f,  0.8f, 0.0f,     0.0f, 0.0f,
+
+     0.8f,  0.8f, 0.0f,     1.0f, 1.0f,
+    -0.8f, -0.8f, 0.0f,     0.0f, 0.0f,
+     0.8f, -0.8f, 0.0f,     1.0f, 0.0f,
+};
+struct Map* map_load()
+{
+    struct Map* map = malloc(sizeof(struct Map));
+    map->colormap = image_load_pcx(TEREP_COLORMAP_FILE);
+    map->heightmap = image_load_pcx(TEREP_HEIGHTMAP_FILE);
+    map->texture = image_load_pcx(TEREP_MAPTEX_FILE);
+    map->xSize = TEREP_MAPSZ;
+    map->ySize = TEREP_MAPSZ;
+
+    glGenVertexArrays(1, &map->vao);
+    glBindVertexArray(map->vao);
+    glGenBuffers(1, &map->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(tempdatabuf), tempdatabuf, GL_STATIC_DRAW);
+    map->shader = compile_shader(mapVertexShader, mapFragmentShader);
+
+    // glGenTextures(1, &map->glTex);
+    // glBindTexture(GL_TEXTURE_2D, map->glTex);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, map->texture->width, map->texture->height, 0, GL_RGBA8, GL_UNSIGNED_BYTE, map->texture->pixels);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    return map;
+}
+void map_unload(struct Map* map)
+{
+    // glDeleteTextures(1, &map->glTex);
+    glDeleteProgram(map->shader);
+    glDeleteBuffers(1, &map->vbo);
+    glDeleteVertexArrays(1, &map->vao);
+
+    image_unload(map->colormap);
+    image_unload(map->heightmap);
+    image_unload(map->texture);
+    free(map);
+}
+void map_render(struct Map* map)
+{
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, map->vbo);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    glUseProgram(map->shader);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    glDisableVertexAttribArray(0);
+}
+
+GLFWwindow* window;
+struct Map* current_map;
+
+
 void onGameStart()
 {
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
-    glGenBuffers(1, &vertexbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-    shader = load_shaders(vertexShader, fragmentShader);
-
-    // current_map = map_load();
+    current_map = map_load();
 }
 void onGameStop()
 {
-    glDeleteProgram(shader);
-    glDeleteBuffers(1, &vertexbuffer);
-    glDeleteVertexArrays(1, &VertexArrayID);
-
-    // map_unload(current_map);
+    map_unload(current_map);
 }
 void onInput(GLFWwindow* window)
 {
@@ -254,12 +286,7 @@ void onInput(GLFWwindow* window)
 void onUpdate() {}
 void onRender()
 {
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glUseProgram(shader);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDisableVertexAttribArray(0);
+    map_render(current_map);
 }
 
 int main(int argc, char** argv)
@@ -286,6 +313,7 @@ int main(int argc, char** argv)
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     onGameStart();
     while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
         onInput(window);
 
         onUpdate();
@@ -293,7 +321,6 @@ int main(int argc, char** argv)
         glClear(GL_COLOR_BUFFER_BIT);
         onRender();
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
     onGameStop();
     glfwTerminate();
