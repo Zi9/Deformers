@@ -1,10 +1,9 @@
-#pragma once
+#include "texture.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "texture.h"
+#include <stdlib.h>
 
 #define TEREP_TEXSZ 256
 
@@ -34,14 +33,13 @@ struct __attribute__((__packed__)) PCXHeader {
 
 struct Texture* image_load_pcx(const char* path)
 {
-    // !NOTE: Reads default terep images as 256x256
-    struct Texture* img = (struct Texture*)malloc(sizeof(struct Texture));
+    struct Texture* img = malloc(sizeof *img);
     FILE* fp = fopen(path, "r");
     if (fp == NULL) {
         printf("Unable to open PCX image %s for reading\n", path);
         return NULL;
     }
-    struct PCXHeader* hdr = (struct PCXHeader*)malloc(PCX_HEADER_SIZE);
+    struct PCXHeader* hdr = malloc(PCX_HEADER_SIZE);
     assert(fread(hdr, PCX_HEADER_SIZE, 1, fp) == 1);
     if (hdr->identifier != 0x0A) {
         fclose(fp);
@@ -58,7 +56,7 @@ struct Texture* image_load_pcx(const char* path)
     uint32_t height = hdr->yMax - hdr->yMin + 1;
     assert(width >= 256);
     uint32_t bufsz = hdr->bytesPerLine * hdr->nplanes * height;
-    uint8_t* buf = (uint8_t*)malloc(bufsz);
+    uint8_t* buf = malloc(bufsz);
     uint8_t in;
     uint8_t repe;
     for (uint32_t bufi = 0; bufi < bufsz;) {
@@ -74,10 +72,8 @@ struct Texture* image_load_pcx(const char* path)
             bufi++;
         }
     }
-    // !NOTE: indexbuf will contain resized pixel index array
-    // *This implementation is kinda hackish
 
-    uint8_t* indexbuf = (uint8_t*)malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof(uint8_t));
+    uint8_t* indexbuf = malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof *indexbuf);
     if (height >= TEREP_TEXSZ) {
         for (int y = 0; y < TEREP_TEXSZ; y++) {
             memcpy(indexbuf + (y * TEREP_TEXSZ), buf + (y * width), TEREP_TEXSZ * sizeof(uint8_t));
@@ -97,7 +93,7 @@ struct Texture* image_load_pcx(const char* path)
     assert(palmagic == 12);
     assert(fread(&img->palette, PCX_PALETTE_SIZE, 1, fp) == 1);
 
-    img->pixels = (struct RGBAColor*)malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof(struct RGBAColor));
+    img->pixels = malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof *img->pixels);
     for (int i = 0; i < TEREP_TEXSZ * TEREP_TEXSZ; i++) {
         img->pixels[i].red = img->palette[img->indices[i]].red;
         img->pixels[i].green = img->palette[img->indices[i]].green;
@@ -117,4 +113,11 @@ struct Texture* image_load_pcx(const char* path)
     img->height = TEREP_TEXSZ;
 
     return img;
+}
+
+void image_unload(struct Texture* img)
+{
+    free(img->indices);
+    free(img->pixels);
+    free(img);
 }

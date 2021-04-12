@@ -1,7 +1,7 @@
-#pragma once
+#ifndef _TEXTURE_H_
+#define _TEXTURE_H_
 
 #include <stdint.h>
-#include <stdlib.h>
 
 struct __attribute__((__packed__)) RGBColor {
     uint8_t red;
@@ -22,9 +22,7 @@ struct Texture {
     struct RGBAColor* pixels;
 };
 
-void image_unload(struct Texture* img)
-{
-    free(img->indices);
-    free(img->pixels);
-    free(img);
-}
+struct Texture* image_load_pcx(const char* path);
+void image_unload(struct Texture* img);
+
+#endif
