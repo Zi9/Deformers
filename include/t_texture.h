@@ -4,19 +4,13 @@
 #include <stdint.h>
 
 struct __attribute__((__packed__)) RGBColor {
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
+    uint8_t red, green, blue;
 };
 struct RGBAColor {
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-    uint8_t alpha;
+    uint8_t red, green, blue, alpha;
 };
 struct Texture {
-    uint32_t width;
-    uint32_t height;
+    uint16_t width, height;
     uint8_t* indices;
     struct RGBColor palette[256];
     struct RGBAColor* pixels;

@@ -14,8 +14,7 @@
 
 struct Map {
     // *NOTE: Add mesh, material and shader stuff in here too m8
-    uint16_t xSize;
-    uint16_t ySize;
+    uint16_t xSize, ySize;
     struct Texture* heightmap;
     struct Texture* colormap;
     struct Texture* texture;
