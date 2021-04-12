@@ -1,4 +1,4 @@
-#include "texture.h"
+#include "t_texture.h"
 
 #include <assert.h>
 #include <stdio.h>

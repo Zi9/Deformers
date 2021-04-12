@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "map.h"
+#include "t_map.h"
 
 // TODO: Add error checking to this
 GLuint compile_shader(const char* vertexShader, const char* fragmentShader)

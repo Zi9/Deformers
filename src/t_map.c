@@ -1,4 +1,4 @@
-#include "map.h"
+#include "t_map.h"
 
 #include <stdlib.h>
 

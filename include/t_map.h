@@ -1,10 +1,10 @@
-#ifndef _MAP_H_
-#define _MAP_H_
+#ifndef _T_MAP_H_
+#define _T_MAP_H_
 
 #include <GL/glew.h>
 #include <stdint.h>
 
-#include "texture.h"
+#include "t_texture.h"
 
 #define TEREP_MAPSZ 256
 #define TEREP_HEIGHTMAP_FILE "map.pcx"

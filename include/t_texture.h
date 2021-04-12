@@ -1,5 +1,5 @@
-#ifndef _TEXTURE_H_
-#define _TEXTURE_H_
+#ifndef _T_TEXTURE_H_
+#define _T_TEXTURE_H_
 
 #include <stdint.h>
 
