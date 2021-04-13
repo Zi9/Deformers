@@ -2,11 +2,33 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+
+inline void texture_opengl_init(struct Texture* tex)
+{
+    glGenTextures(1, &tex->id);
+    glBindTexture(GL_TEXTURE_2D, tex->id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex->width, tex->height, 0, GL_RGBA8, GL_UNSIGNED_BYTE, tex->pixels);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+}
+void texture_generate_pixels(struct Texture* tex)
+{
+    tex->pixels = malloc(tex->width * tex->height * sizeof *tex->pixels);
+    for (int i = 0; i < tex->width * tex->height; i++) {
+        tex->pixels[i].red = tex->palette[tex->indices[i]].red;
+        tex->pixels[i].green = tex->palette[tex->indices[i]].green;
+        tex->pixels[i].blue = tex->palette[tex->indices[i]].blue;
+        if (tex->indices[i] == 255) {
+            tex->pixels[i].alpha = 255;
+        } else {
+            tex->pixels[i].alpha = 0;
+        }
+    }
+}
 
 #define TEREP_TEXSZ 256
-
 #define PCX_HEADER_SIZE 128
 #define PCX_PALETTE_SIZE 768
 struct __attribute__((__packed__)) PCXHeader {
@@ -31,9 +53,9 @@ struct __attribute__((__packed__)) PCXHeader {
     uint16_t paletteInfo;
 };
 
-struct Texture* image_load_pcx(const char* path)
+struct Texture* texture_load_pcx(const char* path)
 {
-    struct Texture* img = malloc(sizeof *img);
+    struct Texture* tex = malloc(sizeof *tex);
     FILE* fp = fopen(path, "r");
     if (fp == NULL) {
         printf("Unable to open PCX image %s for reading\n", path);
@@ -55,6 +77,10 @@ struct Texture* image_load_pcx(const char* path)
     uint32_t width = hdr->xMax - hdr->xMin + 1;
     uint32_t height = hdr->yMax - hdr->yMin + 1;
     assert(width >= 256);
+
+    tex->width = TEREP_TEXSZ;
+    tex->height = TEREP_TEXSZ;
+
     uint32_t bufsz = hdr->bytesPerLine * hdr->nplanes * height;
     uint8_t* buf = malloc(bufsz);
     uint8_t in;
@@ -72,6 +98,8 @@ struct Texture* image_load_pcx(const char* path)
             bufi++;
         }
     }
+    free(buf);
+    free(hdr);
 
     uint8_t* indexbuf = malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof *indexbuf);
     if (height >= TEREP_TEXSZ) {
@@ -86,38 +114,24 @@ struct Texture* image_load_pcx(const char* path)
         }
         memset(indexbuf + wrote_pixels, 0xFF, (TEREP_TEXSZ * TEREP_TEXSZ * sizeof(uint8_t)) - wrote_pixels);
     }
-    img->indices = indexbuf;
+    tex->indices = indexbuf;
 
     uint8_t palmagic;
     fread(&palmagic, sizeof(palmagic), 1, fp);
     assert(palmagic == 12);
-    assert(fread(&img->palette, PCX_PALETTE_SIZE, 1, fp) == 1);
+    assert(fread(&tex->palette, PCX_PALETTE_SIZE, 1, fp) == 1);
 
-    img->pixels = malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof *img->pixels);
-    for (int i = 0; i < TEREP_TEXSZ * TEREP_TEXSZ; i++) {
-        img->pixels[i].red = img->palette[img->indices[i]].red;
-        img->pixels[i].green = img->palette[img->indices[i]].green;
-        img->pixels[i].blue = img->palette[img->indices[i]].blue;
-        if (img->indices[i] == 255) {
-            img->pixels[i].alpha = 255;
-        } else {
-            img->pixels[i].alpha = 0;
-        }
-    }
-
-    free(buf);
-    free(hdr);
     fclose(fp);
 
-    img->width = TEREP_TEXSZ;
-    img->height = TEREP_TEXSZ;
+    texture_generate_pixels(tex);
+    texture_opengl_init(tex);
 
-    return img;
+    return tex;
 }
-
-void image_unload(struct Texture* img)
+void texture_unload(struct Texture* tex)
 {
-    free(img->indices);
-    free(img->pixels);
-    free(img);
+    glDeleteTextures(1, &tex->id);
+    free(tex->indices);
+    free(tex->pixels);
+    free(tex);
 }

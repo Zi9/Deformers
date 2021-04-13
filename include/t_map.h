@@ -11,7 +11,6 @@
 #define TEREP_COLORMAP_FILE "col.pcx"
 #define TEREP_MAPTEX_FILE "maptex.pcx"
 
-
 struct Map {
     // *NOTE: Add mesh, material and shader stuff in here too m8
     uint16_t xSize, ySize;
@@ -22,7 +21,6 @@ struct Map {
     GLuint vao;
     GLuint vbo;
     GLuint shader;
-    GLuint glTex;
 };
 
 struct Map* map_load();
