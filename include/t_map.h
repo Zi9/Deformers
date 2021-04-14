@@ -1,30 +1,23 @@
-#ifndef _T_MAP_H_
-#define _T_MAP_H_
+#pragma once
 
-#include <GL/glew.h>
-#include <stdint.h>
-
-#include "t_texture.h"
+#include <raylib.h>
 
 #define TEREP_MAPSZ 256
+#define TEREP_TEXSZ 256
 #define TEREP_HEIGHTMAP_FILE "map.pcx"
 #define TEREP_COLORMAP_FILE "col.pcx"
 #define TEREP_MAPTEX_FILE "maptex.pcx"
 
-struct Map {
-    // *NOTE: Add mesh, material and shader stuff in here too m8
-    uint16_t xSize, ySize;
-    struct Texture* heightmap;
-    struct Texture* colormap;
-    struct Texture* texture;
 
-    GLuint vao;
-    GLuint vbo;
-    GLuint shader;
-};
+typedef struct TerepMap {
+    unsigned short size;
+    unsigned char* colormap;
+    unsigned char* heightmap;
+    Image image;
+    Texture2D texture;
+    Mesh mesh;
+} TerepMap;
 
-struct Map* map_load();
-void map_unload(struct Map* map);
-void map_render(struct Map* map);
-
-#endif
+TerepMap* map_load();
+void map_unload(TerepMap* map);
+void map_render(TerepMap* map);
