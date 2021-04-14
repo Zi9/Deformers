@@ -135,15 +135,19 @@ TerepMap* map_load()
     map->size = TEREP_MAPSZ;
 
     struct PCXData* pcx;
+
     pcx = pcx_load(TEREP_COLORMAP_FILE);
     map->colormap = pcx->indices;
     pcx_cleanup(pcx);
+
     pcx = pcx_load(TEREP_HEIGHTMAP_FILE);
     map->heightmap = pcx->indices;
     pcx_cleanup(pcx);
+
     pcx = pcx_load(TEREP_MAPTEX_FILE);
     pcx_to_image(pcx, &(map->image));
     pcx_cleanup(pcx);
+
     map->texture = LoadTextureFromImage(map->image);
     return map;
 }
