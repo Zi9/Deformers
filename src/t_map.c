@@ -78,7 +78,6 @@ struct PCXData* pcx_load(const char* path)
             bufi++;
         }
     }
-    free(buf);
     free(hdr);
 
     pcx->indices = malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof *pcx->indices);
@@ -94,6 +93,7 @@ struct PCXData* pcx_load(const char* path)
         }
         memset(pcx->indices + wrote_pixels, 0xFF, (TEREP_TEXSZ * TEREP_TEXSZ * sizeof(uint8_t)) - wrote_pixels);
     }
+    free(buf);
 
     uint8_t palmagic;
     fread(&palmagic, sizeof(palmagic), 1, fp);
