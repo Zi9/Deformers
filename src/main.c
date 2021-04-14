@@ -2,8 +2,8 @@
 #define WINDOW_WIDTH 960
 #define WINDOW_HEIGHT 600
 
-#include <raylib.h>
 #include "t_map.h"
+#include <raylib.h>
 
 int main()
 {
@@ -11,12 +11,10 @@ int main()
     SetTargetFPS(30);
     SetWindowPosition(1800, 300);
     TerepMap* map = map_load();
-    while (!WindowShouldClose())
-    {
+    while (!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
         map_render(map);
-        DrawText("Hello world", 0, 0, 20, BLACK);
         EndDrawing();
     }
     map_unload(map);

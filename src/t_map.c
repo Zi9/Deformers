@@ -1,39 +1,39 @@
 #include "t_map.h"
 
+#include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
-#include <rlgl.h>
 
 #define PCX_HEADER_SIZE 128
 #define PCX_PALETTE_SIZE 768
 struct __attribute__((__packed__)) RGBColor {
-    unsigned char red, green, blue;
+    uint8_t red, green, blue;
 };
 struct __attribute__((__packed__)) PCXHeader {
-    unsigned char identifier;
-    unsigned char version;
-    unsigned char encoding;
-    unsigned char bitsPerPixel;
+    uint8_t identifier;
+    uint8_t version;
+    uint8_t encoding;
+    uint8_t bitsPerPixel;
 
-    unsigned short xMin;
-    unsigned short yMin;
-    unsigned short xMax;
-    unsigned short yMax;
+    uint16_t xMin;
+    uint16_t yMin;
+    uint16_t xMax;
+    uint16_t yMax;
 
-    unsigned short hDPI;
-    unsigned short vDPI;
+    uint16_t hDPI;
+    uint16_t vDPI;
 
     struct RGBColor colmap[16];
 
-    unsigned char reserved;
-    unsigned char nplanes;
-    unsigned short bytesPerLine;
-    unsigned short paletteInfo;
+    uint8_t reserved;
+    uint8_t nplanes;
+    uint16_t bytesPerLine;
+    uint16_t paletteInfo;
 };
 struct PCXData {
-    unsigned char* indices;
+    uint8_t* indices;
     struct RGBColor palette[256];
 };
 
@@ -58,14 +58,14 @@ struct PCXData* pcx_load(const char* path)
     assert(hdr->bitsPerPixel == 8);
     assert(hdr->nplanes == 1);
 
-    unsigned short width = hdr->xMax - hdr->xMin + 1;
-    unsigned short height = hdr->yMax - hdr->yMin + 1;
+    uint16_t width = hdr->xMax - hdr->xMin + 1;
+    uint16_t height = hdr->yMax - hdr->yMin + 1;
     assert(width >= 256);
 
-    unsigned int bufsz = hdr->bytesPerLine * hdr->nplanes * height;
-    unsigned char* buf = malloc(bufsz);
-    unsigned char in, repe;
-    for (unsigned int bufi = 0; bufi < bufsz;) {
+    size_t bufsz = hdr->bytesPerLine * hdr->nplanes * height;
+    uint8_t* buf = malloc(bufsz);
+    uint8_t in, repe;
+    for (size_t bufi = 0; bufi < bufsz;) {
         if (fread(&in, sizeof(in), 1, fp) == 0)
             break;
         if ((0xC0 & in) == 0xC0) {
@@ -84,18 +84,18 @@ struct PCXData* pcx_load(const char* path)
     pcx->indices = malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof *pcx->indices);
     if (height >= TEREP_TEXSZ) {
         for (size_t y = 0; y < TEREP_TEXSZ; y++) {
-            memcpy(pcx->indices + (y * TEREP_TEXSZ), buf + (y * width), TEREP_TEXSZ * sizeof(unsigned char));
+            memcpy(pcx->indices + (y * TEREP_TEXSZ), buf + (y * width), TEREP_TEXSZ * sizeof(uint8_t));
         }
     } else {
-        unsigned int wrote_pixels = 0;
+        size_t wrote_pixels = 0;
         for (size_t y = 0; y < height; y++) {
-            memcpy(pcx->indices + (y * TEREP_TEXSZ), buf + (y * width), TEREP_TEXSZ * sizeof(unsigned char));
-            wrote_pixels += TEREP_TEXSZ * sizeof(unsigned char);
+            memcpy(pcx->indices + (y * TEREP_TEXSZ), buf + (y * width), TEREP_TEXSZ * sizeof(uint8_t));
+            wrote_pixels += TEREP_TEXSZ * sizeof(uint8_t);
         }
-        memset(pcx->indices + wrote_pixels, 0xFF, (TEREP_TEXSZ * TEREP_TEXSZ * sizeof(unsigned char)) - wrote_pixels);
+        memset(pcx->indices + wrote_pixels, 0xFF, (TEREP_TEXSZ * TEREP_TEXSZ * sizeof(uint8_t)) - wrote_pixels);
     }
 
-    unsigned char palmagic;
+    uint8_t palmagic;
     fread(&palmagic, sizeof(palmagic), 1, fp);
     assert(palmagic == 12);
     assert(fread(&pcx->palette, PCX_PALETTE_SIZE, 1, fp) == 1);
@@ -104,11 +104,10 @@ struct PCXData* pcx_load(const char* path)
 
     return pcx;
 }
-
 void pcx_to_image(struct PCXData* pcx, Image* img)
 {
     Color* pix = malloc(TEREP_TEXSZ * TEREP_TEXSZ * sizeof *pix);
-    for (int i = 0; i < TEREP_TEXSZ * TEREP_TEXSZ; i++) {
+    for (size_t i = 0; i < TEREP_TEXSZ * TEREP_TEXSZ; i++) {
         pix[i].r = pcx->palette[pcx->indices[i]].red;
         pix[i].g = pcx->palette[pcx->indices[i]].green;
         pix[i].b = pcx->palette[pcx->indices[i]].blue;
@@ -151,7 +150,4 @@ void map_unload(TerepMap* map)
     UnloadTexture(map->texture);
     free(map);
 }
-void map_render(TerepMap* map)
-{
-    DrawTexture(map->texture, 0, 0, WHITE);
-}
+void map_render(TerepMap* map) { DrawTexture(map->texture, 0, 0, WHITE); }
