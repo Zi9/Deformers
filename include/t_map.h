@@ -15,7 +15,7 @@ typedef struct TerepMap {
     uint8_t* heightmap;
     Image image;
     Texture2D texture;
-    Mesh mesh;
+    Model model;
 } TerepMap;
 
 TerepMap* map_load();

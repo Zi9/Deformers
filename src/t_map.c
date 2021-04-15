@@ -123,9 +123,10 @@ void pcx_to_image(struct PCXData* pcx, Image* img)
     img->format = 7;
     img->mipmaps = 1;
 }
-void pcx_cleanup(struct PCXData* pcx)
+void pcx_cleanup(struct PCXData* pcx, bool freeIndex)
 {
-    free(pcx->indices);
+    if (freeIndex)
+        free(pcx->indices);
     free(pcx);
 }
 
@@ -138,15 +139,15 @@ TerepMap* map_load()
 
     pcx = pcx_load(TEREP_COLORMAP_FILE);
     map->colormap = pcx->indices;
-    pcx_cleanup(pcx);
+    pcx_cleanup(pcx, false);
 
     pcx = pcx_load(TEREP_HEIGHTMAP_FILE);
     map->heightmap = pcx->indices;
-    pcx_cleanup(pcx);
+    pcx_cleanup(pcx, false);
 
     pcx = pcx_load(TEREP_MAPTEX_FILE);
     pcx_to_image(pcx, &(map->image));
-    pcx_cleanup(pcx);
+    pcx_cleanup(pcx, true);
 
     map->texture = LoadTextureFromImage(map->image);
     return map;
