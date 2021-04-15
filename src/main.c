@@ -19,8 +19,8 @@ int main()
             ClearBackground(RAYWHITE);
             BeginMode3D(cam->rlCam);
                 DrawGrid(10, 1.0f);
+                map_render(map);
             EndMode3D();
-            // map_render(map);
         EndDrawing();
     }
     map_unload(map);
