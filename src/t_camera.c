@@ -6,6 +6,7 @@
 
 #define CAMERA_DEFAULT_MOUSE_SENS 0.2f
 #define CAMERA_DEFAULT_SPEED 10.0f
+#define CAMERA_SPEED_MOD_MULT 3
 
 TerepCamera* camera_create()
 {
@@ -74,9 +75,9 @@ void camera_update(TerepCamera* cam, float dt)
         
         float vel = dt;
         if (IsKeyDown(KEY_LEFT_SHIFT))
-            vel *= cam->camSpeed * 2;
+            vel *= cam->camSpeed * CAMERA_SPEED_MOD_MULT;
         else if (IsKeyDown(KEY_LEFT_ALT))
-            vel *= cam->camSpeed / 2;
+            vel *= cam->camSpeed / CAMERA_SPEED_MOD_MULT;
         else
             vel *= cam->camSpeed;
         
