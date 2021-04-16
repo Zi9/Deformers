@@ -1,4 +1,4 @@
-#define WINDOW_TITLE "The Deformers - A recreation of Terep2"
+#define WINDOW_TITLE "Deformers - A recreation of Terep2"
 #define RENDER_SIZE_MULTIPLIER 2
 #define RENDER_WIDTH 320
 #define RENDER_HEIGHT 200

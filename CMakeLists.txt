@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(TheDeformers)
+project(Deformers)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 include_directories(include)
@@ -13,5 +13,5 @@ add_custom_command(
     VERBATIM
 )
 
-add_executable(TheDeformers ${SRC} include/t_shaders.h)
-target_link_libraries(TheDeformers raylib m)
+add_executable(Deformers ${SRC} include/t_shaders.h)
+target_link_libraries(Deformers raylib m)
