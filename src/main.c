@@ -1,6 +1,8 @@
 #define WINDOW_TITLE "The Deformers - A recreation of Terep2"
-#define WINDOW_WIDTH 960
-#define WINDOW_HEIGHT 600
+#define RENDER_SIZE_MULTIPLIER 2
+#define RENDER_WIDTH 320
+#define RENDER_HEIGHT 200
+#define RENDER_PIXELIZED true
 
 #include "t_map.h"
 #include "t_camera.h"
@@ -10,9 +12,17 @@ bool wireframe = false;
 
 int main()
 {
-    InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+    InitWindow(RENDER_WIDTH*RENDER_SIZE_MULTIPLIER, RENDER_HEIGHT*RENDER_SIZE_MULTIPLIER, WINDOW_TITLE);
     SetTargetFPS(60);
     SetWindowPosition(1800, 300);
+
+    RenderTexture2D target;
+    if (RENDER_PIXELIZED) {
+        target = LoadRenderTexture(RENDER_WIDTH, RENDER_HEIGHT);
+    } else {
+        target = LoadRenderTexture(RENDER_WIDTH*RENDER_SIZE_MULTIPLIER, RENDER_HEIGHT*RENDER_SIZE_MULTIPLIER);
+    }
+
     TerepCamera* cam = camera_create();
     TerepMap* map = map_load();
     while (!WindowShouldClose()) {
@@ -22,10 +32,22 @@ int main()
             wireframe = !wireframe;
 
         BeginDrawing();
-            ClearBackground(RAYWHITE);
-            BeginMode3D(cam->rlCam);
-                map_render(map, wireframe);
-            EndMode3D();
+            BeginTextureMode(target);
+            ClearBackground(SKYBLUE);
+                BeginMode3D(cam->rlCam);
+                    map_render(map, wireframe);
+                EndMode3D();
+            EndTextureMode();
+
+            // DrawTextureRec(target.texture,
+            //                (Rectangle){0, 0,
+            //                            target.texture.width*RENDER_SIZE_MULTIPLIER,
+            //                            -target.texture.height*RENDER_SIZE_MULTIPLIER},
+            //                (Vector2){0, 0}, WHITE);
+            DrawTexturePro(target.texture,
+                           (Rectangle){0, 0, target.texture.width, -target.texture.height},
+                           (Rectangle){0, 0, RENDER_WIDTH*RENDER_SIZE_MULTIPLIER, RENDER_HEIGHT*RENDER_SIZE_MULTIPLIER},
+                           (Vector2){0, 0}, 0.0f, WHITE);
         EndDrawing();
     }
     map_unload(map);
