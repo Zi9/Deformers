@@ -5,7 +5,7 @@
 #define RENDER_PIXELIZED true
 
 #define TEREP_SKY                                                                                                      \
-    (Color) { 102, 191, 255, 255 }
+    (Color) { 93, 199, 255, 255 }
 
 #include "t_camera.h"
 #include "t_map.h"
