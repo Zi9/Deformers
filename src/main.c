@@ -4,17 +4,18 @@
 #define RENDER_HEIGHT 200
 #define RENDER_PIXELIZED true
 
-#define TEREP_SKY (Color){102, 191, 255, 255}
+#define TEREP_SKY                                                                                                      \
+    (Color) { 102, 191, 255, 255 }
 
-#include "t_map.h"
 #include "t_camera.h"
+#include "t_map.h"
 #include <raylib.h>
 
 bool wireframe = false;
 
 int main()
 {
-    InitWindow(RENDER_WIDTH*RENDER_SIZE_MULTIPLIER, RENDER_HEIGHT*RENDER_SIZE_MULTIPLIER, WINDOW_TITLE);
+    InitWindow(RENDER_WIDTH * RENDER_SIZE_MULTIPLIER, RENDER_HEIGHT * RENDER_SIZE_MULTIPLIER, WINDOW_TITLE);
     SetTargetFPS(60);
     SetWindowPosition(1800, 300);
 
@@ -22,7 +23,7 @@ int main()
     if (RENDER_PIXELIZED) {
         target = LoadRenderTexture(RENDER_WIDTH, RENDER_HEIGHT);
     } else {
-        target = LoadRenderTexture(RENDER_WIDTH*RENDER_SIZE_MULTIPLIER, RENDER_HEIGHT*RENDER_SIZE_MULTIPLIER);
+        target = LoadRenderTexture(RENDER_WIDTH * RENDER_SIZE_MULTIPLIER, RENDER_HEIGHT * RENDER_SIZE_MULTIPLIER);
     }
 
     TerepCamera* cam = camera_create();
@@ -34,16 +35,21 @@ int main()
             wireframe = !wireframe;
 
         BeginDrawing();
-            BeginTextureMode(target);
-                ClearBackground(TEREP_SKY);
-                BeginMode3D(cam->rlCam);
-                    map_render(map, wireframe);
-                EndMode3D();
-            EndTextureMode();
-            DrawTexturePro(target.texture,
-                           (Rectangle){0, 0, target.texture.width, -target.texture.height},
-                           (Rectangle){0, 0, RENDER_WIDTH*RENDER_SIZE_MULTIPLIER, RENDER_HEIGHT*RENDER_SIZE_MULTIPLIER},
-                           (Vector2){0, 0}, 0.0f, WHITE);
+
+        BeginTextureMode(target);
+
+        ClearBackground(TEREP_SKY);
+        BeginMode3D(cam->rlCam);
+
+        map_render(map, wireframe);
+
+        EndMode3D();
+
+        EndTextureMode();
+
+        DrawTexturePro(target.texture, (Rectangle){0, 0, target.texture.width, -target.texture.height},
+                       (Rectangle){0, 0, RENDER_WIDTH * RENDER_SIZE_MULTIPLIER, RENDER_HEIGHT * RENDER_SIZE_MULTIPLIER},
+                       (Vector2){0, 0}, 0.0f, WHITE);
         EndDrawing();
     }
     map_unload(map);

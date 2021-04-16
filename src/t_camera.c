@@ -1,8 +1,8 @@
 #include "t_camera.h"
 
+#include <math.h>
 #include <raymath.h>
 #include <stdlib.h>
-#include <math.h>
 
 #define CAMERA_DEFAULT_MOUSE_SENS 0.2f
 #define CAMERA_DEFAULT_SPEED 10.0f
@@ -32,10 +32,7 @@ TerepCamera* camera_create()
     cam->rlCam.type = CAMERA_PERSPECTIVE;
     return cam;
 }
-void camera_destroy(TerepCamera* cam)
-{
-    free(cam);
-}
+void camera_destroy(TerepCamera* cam) { free(cam); }
 void camera_enable_freecam(TerepCamera* cam)
 {
     cam->freecamEnabled = true;
@@ -55,7 +52,7 @@ void camera_update(TerepCamera* cam, float dt)
             camera_disable_freecam(cam);
         else
             camera_enable_freecam(cam);
-    } 
+    }
     if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
         camera_enable_freecam(cam);
     if (IsMouseButtonReleased(MOUSE_RIGHT_BUTTON))
@@ -72,7 +69,7 @@ void camera_update(TerepCamera* cam, float dt)
             cam->pitch = 89.0f;
         else if (cam->pitch < -89.0f)
             cam->pitch = -89.0f;
-        
+
         float vel = dt;
         if (IsKeyDown(KEY_LEFT_SHIFT))
             vel *= cam->camSpeed * CAMERA_SPEED_MOD_MULT;
@@ -80,23 +77,28 @@ void camera_update(TerepCamera* cam, float dt)
             vel *= cam->camSpeed / CAMERA_SPEED_MOD_MULT;
         else
             vel *= cam->camSpeed;
-        
+
         if (IsKeyDown(KEY_W))
-            cam->rlCam.position = Vector3Add(cam->rlCam.position, Vector3Multiply(cam->forward, (Vector3){vel, vel, vel}));
+            cam->rlCam.position =
+                Vector3Add(cam->rlCam.position, Vector3Multiply(cam->forward, (Vector3){vel, vel, vel}));
         if (IsKeyDown(KEY_S))
-            cam->rlCam.position = Vector3Subtract(cam->rlCam.position, Vector3Multiply(cam->forward, (Vector3){vel, vel, vel}));
+            cam->rlCam.position =
+                Vector3Subtract(cam->rlCam.position, Vector3Multiply(cam->forward, (Vector3){vel, vel, vel}));
         if (IsKeyDown(KEY_D))
-            cam->rlCam.position = Vector3Add(cam->rlCam.position, Vector3Multiply(cam->right, (Vector3){vel, vel, vel}));
+            cam->rlCam.position =
+                Vector3Add(cam->rlCam.position, Vector3Multiply(cam->right, (Vector3){vel, vel, vel}));
         if (IsKeyDown(KEY_A))
-            cam->rlCam.position = Vector3Subtract(cam->rlCam.position, Vector3Multiply(cam->right, (Vector3){vel, vel, vel}));
+            cam->rlCam.position =
+                Vector3Subtract(cam->rlCam.position, Vector3Multiply(cam->right, (Vector3){vel, vel, vel}));
         if (IsKeyDown(KEY_E))
             cam->rlCam.position = Vector3Add(cam->rlCam.position, Vector3Multiply(cam->up, (Vector3){vel, vel, vel}));
         if (IsKeyDown(KEY_Q))
-            cam->rlCam.position = Vector3Subtract(cam->rlCam.position, Vector3Multiply(cam->up, (Vector3){vel, vel, vel}));
+            cam->rlCam.position =
+                Vector3Subtract(cam->rlCam.position, Vector3Multiply(cam->up, (Vector3){vel, vel, vel}));
 
-        cam->forward.x = cosf(DEG2RAD*cam->yaw) * cosf(DEG2RAD*cam->pitch);
-        cam->forward.y = sinf(DEG2RAD*cam->pitch);
-        cam->forward.z = sinf(DEG2RAD*cam->yaw) * cosf(DEG2RAD*cam->pitch);
+        cam->forward.x = cosf(DEG2RAD * cam->yaw) * cosf(DEG2RAD * cam->pitch);
+        cam->forward.y = sinf(DEG2RAD * cam->pitch);
+        cam->forward.z = sinf(DEG2RAD * cam->yaw) * cosf(DEG2RAD * cam->pitch);
         cam->forward = Vector3Normalize(cam->forward);
         cam->right = Vector3Normalize(Vector3CrossProduct(cam->forward, cam->worldUp));
         cam->up = Vector3Normalize(Vector3CrossProduct(cam->right, cam->forward));

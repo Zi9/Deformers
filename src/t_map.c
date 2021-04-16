@@ -1,12 +1,12 @@
 #include "t_map.h"
 
 #include <assert.h>
+#include <math.h>
+#include <rlgl.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <rlgl.h>
 
 #define TMAP_SCALE 1.0f
 #define TMAP_HEIGHT_SCALE 0.075f
@@ -158,52 +158,52 @@ void build_map_model(TerepMap* map)
 
     for (uint16_t z = 0; z < map->size - 1; z++) {
         for (uint16_t x = 0; x < map->size - 1; x++) {
-            vertices[vertC]    = (x - map->size/2.0f) * TMAP_SCALE;
-            vertices[vertC+1]  = map->heightmap[x + z * map->size] * TMAP_HEIGHT_SCALE;
-            vertices[vertC+2]  = (z - map->size/2.0f) * TMAP_SCALE;
+            vertices[vertC] = (x - map->size / 2.0f) * TMAP_SCALE;
+            vertices[vertC + 1] = map->heightmap[x + z * map->size] * TMAP_HEIGHT_SCALE;
+            vertices[vertC + 2] = (z - map->size / 2.0f) * TMAP_SCALE;
 
-            vertices[vertC+3]  = (x - map->size/2.0f) * TMAP_SCALE;
-            vertices[vertC+4]  = map->heightmap[x + (z + 1) * map->size] * TMAP_HEIGHT_SCALE;
-            vertices[vertC+5]  = (z - map->size/2.0f + 1) * TMAP_SCALE;
+            vertices[vertC + 3] = (x - map->size / 2.0f) * TMAP_SCALE;
+            vertices[vertC + 4] = map->heightmap[x + (z + 1) * map->size] * TMAP_HEIGHT_SCALE;
+            vertices[vertC + 5] = (z - map->size / 2.0f + 1) * TMAP_SCALE;
 
-            vertices[vertC+6]  = (x - map->size/2.0f + 1) * TMAP_SCALE;
-            vertices[vertC+7]  = map->heightmap[x + 1 + z * map->size] * TMAP_HEIGHT_SCALE;
-            vertices[vertC+8]  = (z - map->size/2.0f) * TMAP_SCALE;
+            vertices[vertC + 6] = (x - map->size / 2.0f + 1) * TMAP_SCALE;
+            vertices[vertC + 7] = map->heightmap[x + 1 + z * map->size] * TMAP_HEIGHT_SCALE;
+            vertices[vertC + 8] = (z - map->size / 2.0f) * TMAP_SCALE;
 
-            vertices[vertC+9]  = vertices[vertC+6];
-            vertices[vertC+10] = vertices[vertC+7];
-            vertices[vertC+11] = vertices[vertC+8];
+            vertices[vertC + 9] = vertices[vertC + 6];
+            vertices[vertC + 10] = vertices[vertC + 7];
+            vertices[vertC + 11] = vertices[vertC + 8];
 
-            vertices[vertC+12] = vertices[vertC+3];
-            vertices[vertC+13] = vertices[vertC+4];
-            vertices[vertC+14] = vertices[vertC+5];
+            vertices[vertC + 12] = vertices[vertC + 3];
+            vertices[vertC + 13] = vertices[vertC + 4];
+            vertices[vertC + 14] = vertices[vertC + 5];
 
-            vertices[vertC+15] = (x - map->size/2.0f + 1) * TMAP_SCALE;
-            vertices[vertC+16] = map->heightmap[x + 1 + (z + 1) * map->size] * TMAP_HEIGHT_SCALE;
-            vertices[vertC+17] = (z - map->size/2.0f + 1) * TMAP_SCALE;
+            vertices[vertC + 15] = (x - map->size / 2.0f + 1) * TMAP_SCALE;
+            vertices[vertC + 16] = map->heightmap[x + 1 + (z + 1) * map->size] * TMAP_HEIGHT_SCALE;
+            vertices[vertC + 17] = (z - map->size / 2.0f + 1) * TMAP_SCALE;
 
             vertC += 18;
 
             uvy = (float)floor(map->colormap[x + z * TEREP_TEXSZ] / 16.0f) * TMAP_UVMULT;
             uvx = map->colormap[x + z * TEREP_TEXSZ] * TMAP_UVMULT;
 
-            uvs[uvC]   = uvx;
-            uvs[uvC+1] = uvy;
+            uvs[uvC] = uvx;
+            uvs[uvC + 1] = uvy;
 
-            uvs[uvC+2] = uvx;
-            uvs[uvC+3] = uvy + TMAP_UVMULT;
+            uvs[uvC + 2] = uvx;
+            uvs[uvC + 3] = uvy + TMAP_UVMULT;
 
-            uvs[uvC+4] = uvx + TMAP_UVMULT;
-            uvs[uvC+5] = uvy;
+            uvs[uvC + 4] = uvx + TMAP_UVMULT;
+            uvs[uvC + 5] = uvy;
 
-            uvs[uvC+6] = uvs[uvC+4];
-            uvs[uvC+7] = uvs[uvC+5];
+            uvs[uvC + 6] = uvs[uvC + 4];
+            uvs[uvC + 7] = uvs[uvC + 5];
 
-            uvs[uvC+8] = uvs[uvC+2];
-            uvs[uvC+9] = uvs[uvC+3];
+            uvs[uvC + 8] = uvs[uvC + 2];
+            uvs[uvC + 9] = uvs[uvC + 3];
 
-            uvs[uvC+10] = uvx + TMAP_UVMULT;
-            uvs[uvC+11] = uvy + TMAP_UVMULT;
+            uvs[uvC + 10] = uvx + TMAP_UVMULT;
+            uvs[uvC + 11] = uvy + TMAP_UVMULT;
 
             uvC += 12;
         }
@@ -222,8 +222,8 @@ const char* vs = "#version 330\n"
                  "uniform mat4 mvp;"
                  "out vec3 fragTexCoord;"
                  "void main() {"
-                    "gl_Position = mvp*vec4(vertexPosition);"
-                    "fragTexCoord = vec3(vertexTexCoord*gl_Position.z, gl_Position.z);"
+                 "gl_Position = mvp*vec4(vertexPosition);"
+                 "fragTexCoord = vec3(vertexTexCoord*gl_Position.z, gl_Position.z);"
                  "}";
 
 const char* fs = "#version 330\n"
@@ -231,7 +231,7 @@ const char* fs = "#version 330\n"
                  "uniform sampler2D texture0;"
                  "out vec4 finalColor;"
                  "void main() {"
-                    "finalColor = texture(texture0, fragTexCoord.xy/fragTexCoord.z);"
+                 "finalColor = texture(texture0, fragTexCoord.xy/fragTexCoord.z);"
                  "}";
 
 TerepMap* map_load()
