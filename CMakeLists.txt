@@ -9,7 +9,7 @@ file(GLOB SRC src/*.c)
 add_custom_command(
     OUTPUT include/t_shaders.h
     COMMAND python ../shaderbuild.py ../shaders/ ../include/
-    DEPENDS ./shaders/*
+    DEPENDS ./shaders/affine.fs ./shaders/affine.vs
     VERBATIM
 )
 
