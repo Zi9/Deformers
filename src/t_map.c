@@ -156,8 +156,8 @@ void build_map_model(TerepMap* map)
 
     float uvx, uvy;
 
-    for (size_t z = 0; z < map->size - 1; z++) {
-        for (size_t x = 0; x < map->size - 1; x++) {
+    for (uint16_t z = 0; z < map->size - 1; z++) {
+        for (uint16_t x = 0; x < map->size - 1; x++) {
             vertices[vertC]    = (x - map->size/2.0f) * TMAP_SCALE;
             vertices[vertC+1]  = map->heightmap[x + z * map->size] * TMAP_HEIGHT_SCALE;
             vertices[vertC+2]  = (z - map->size/2.0f) * TMAP_SCALE;
