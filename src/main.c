@@ -40,12 +40,6 @@ int main()
                     map_render(map, wireframe);
                 EndMode3D();
             EndTextureMode();
-
-            // DrawTextureRec(target.texture,
-            //                (Rectangle){0, 0,
-            //                            target.texture.width*RENDER_SIZE_MULTIPLIER,
-            //                            -target.texture.height*RENDER_SIZE_MULTIPLIER},
-            //                (Vector2){0, 0}, WHITE);
             DrawTexturePro(target.texture,
                            (Rectangle){0, 0, target.texture.width, -target.texture.height},
                            (Rectangle){0, 0, RENDER_WIDTH*RENDER_SIZE_MULTIPLIER, RENDER_HEIGHT*RENDER_SIZE_MULTIPLIER},
