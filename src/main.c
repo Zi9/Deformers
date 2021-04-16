@@ -4,6 +4,8 @@
 #define RENDER_HEIGHT 200
 #define RENDER_PIXELIZED true
 
+#define TEREP_SKY (Color){102, 191, 255, 255}
+
 #include "t_map.h"
 #include "t_camera.h"
 #include <raylib.h>
@@ -33,7 +35,7 @@ int main()
 
         BeginDrawing();
             BeginTextureMode(target);
-            ClearBackground(SKYBLUE);
+            ClearBackground(TEREP_SKY);
                 BeginMode3D(cam->rlCam);
                     map_render(map, wireframe);
                 EndMode3D();
