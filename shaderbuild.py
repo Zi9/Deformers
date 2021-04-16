@@ -21,10 +21,13 @@ for shdrfile in glob.glob(f"{SHADERS_FOLDER}/*"):
 
 outfile.write("#pragma once\n\n")
 for shader in shaders:
+    spacing = len(f"static const char* {shader['name']}_{shader['type']} = ")
     outfile.write(f"static const char* {shader['name']}_{shader['type']} = ")
     for linenum in range(len(shader['text'])):
         cLine = shader['text'][linenum].strip()
         if cLine != "":
+            if linenum != 0:
+                outfile.write(" "*spacing)
             if linenum == len(shader['text']) - 1:
                 outfile.write(f'"{cLine}\\n";\n\n')
             else:
