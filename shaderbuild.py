@@ -22,7 +22,7 @@ for shdrfile in glob.glob(f"{SHADERS_FOLDER}/*"):
     
 outfile.write("#pragma once\n\n")
 for shader in shaders:
-    outfile.write(f"const char* {shader['name']}_{shader['type']} = ")
+    outfile.write(f"const static char* {shader['name']}_{shader['type']} = ")
     for linenum in range(len(shader['text'])):
         cLine = shader['text'][linenum].strip()
         if cLine != "":

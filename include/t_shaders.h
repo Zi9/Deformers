@@ -1,6 +1,6 @@
 #pragma once
 
-const char* affine_vs = "#version 330\n"
+const static char* affine_vs = "#version 330\n"
 "in vec4 vertexPosition;\n"
 "in vec2 vertexTexCoord;\n"
 "uniform mat4 mvp;\n"
@@ -10,7 +10,7 @@ const char* affine_vs = "#version 330\n"
 "fragTexCoord = vec3(vertexTexCoord*gl_Position.z, gl_Position.z);\n"
 "}\n";
 
-const char* affine_fs = "#version 330\n"
+const static char* affine_fs = "#version 330\n"
 "in vec3 fragTexCoord;\n"
 "uniform sampler2D texture0;\n"
 "out vec4 finalColor;\n"
