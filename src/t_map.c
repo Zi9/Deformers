@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "t_shaders.h"
+
 #define TMAP_SCALE 1.0f
 #define TMAP_HEIGHT_SCALE 0.075f
 #define TMAP_UVMULT 0.0625f
@@ -216,24 +218,6 @@ void build_map_model(TerepMap* map)
     map->model = LoadModelFromMesh(msh);
 }
 
-const char* vs = "#version 330\n"
-                 "in vec4 vertexPosition;"
-                 "in vec2 vertexTexCoord;"
-                 "uniform mat4 mvp;"
-                 "out vec3 fragTexCoord;"
-                 "void main() {"
-                 "gl_Position = mvp*vec4(vertexPosition);"
-                 "fragTexCoord = vec3(vertexTexCoord*gl_Position.z, gl_Position.z);"
-                 "}";
-
-const char* fs = "#version 330\n"
-                 "in vec3 fragTexCoord;"
-                 "uniform sampler2D texture0;"
-                 "out vec4 finalColor;"
-                 "void main() {"
-                 "finalColor = texture(texture0, fragTexCoord.xy/fragTexCoord.z);"
-                 "}";
-
 TerepMap* map_load()
 {
     TerepMap* map = malloc(sizeof *map);
@@ -256,7 +240,7 @@ TerepMap* map_load()
     map->texture = LoadTextureFromImage(map->image);
 
     build_map_model(map);
-    map->model.materials[0].shader = LoadShaderCode(vs, fs);
+    map->model.materials[0].shader = LoadShaderCode(affine_vs, affine_fs);
     map->model.materials[0].maps[MAP_DIFFUSE].texture = map->texture;
     return map;
 }
