@@ -35,7 +35,7 @@ int main()
 
         BeginDrawing();
             BeginTextureMode(target);
-            ClearBackground(TEREP_SKY);
+                ClearBackground(TEREP_SKY);
                 BeginMode3D(cam->rlCam);
                     map_render(map, wireframe);
                 EndMode3D();
