@@ -28,7 +28,7 @@ TerepCamera* camera_create()
     cam->rlCam.position = (Vector3){0.0f, 0.0f, 0.0f};
     cam->rlCam.target = cam->forward;
     cam->rlCam.up = cam->up;
-    cam->rlCam.fovy = 90.0f;
+    cam->rlCam.fovy = 60.0f;
     cam->rlCam.type = CAMERA_PERSPECTIVE;
     return cam;
 }
