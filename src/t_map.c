@@ -216,6 +216,24 @@ void build_map_model(TerepMap* map)
     map->model = LoadModelFromMesh(msh);
 }
 
+const char* vs = "#version 330\n"
+                 "in vec4 vertexPosition;"
+                 "in vec2 vertexTexCoord;"
+                 "uniform mat4 mvp;"
+                 "out vec3 fragTexCoord;"
+                 "void main() {"
+                    "gl_Position = mvp*vec4(vertexPosition);"
+                    "fragTexCoord = vec3(vertexTexCoord*gl_Position.z, gl_Position.z);"
+                 "}";
+
+const char* fs = "#version 330\n"
+                 "in vec3 fragTexCoord;"
+                 "uniform sampler2D texture0;"
+                 "out vec4 finalColor;"
+                 "void main() {"
+                    "finalColor = texture(texture0, fragTexCoord.xy/fragTexCoord.z);"
+                 "}";
+
 TerepMap* map_load()
 {
     TerepMap* map = malloc(sizeof *map);
@@ -238,19 +256,24 @@ TerepMap* map_load()
     map->texture = LoadTextureFromImage(map->image);
 
     build_map_model(map);
-    SetMaterialTexture(&map->model.materials[0], MAP_ALBEDO, map->texture);
+    map->model.materials[0].shader = LoadShaderCode(vs, fs);
+    map->model.materials[0].maps[MAP_DIFFUSE].texture = map->texture;
     return map;
 }
 void map_unload(TerepMap* map)
 {
     free(map->colormap);
     free(map->heightmap);
+    UnloadShader(map->model.materials[0].shader);
     UnloadModel(map->model);
     UnloadImage(map->image);
     UnloadTexture(map->texture);
     free(map);
 }
-void map_render(TerepMap* map)
+void map_render(TerepMap* map, bool wireframe)
 {
-    DrawModel(map->model, (Vector3){0.0f, -10.0f, 0.0f}, 1.0f, WHITE);
+    if (wireframe)
+        DrawModelWires(map->model, (Vector3){0.0f, -10.0f, 0.0f}, 1.0f, WHITE);
+    else
+        DrawModel(map->model, (Vector3){0.0f, -10.0f, 0.0f}, 1.0f, WHITE);
 }

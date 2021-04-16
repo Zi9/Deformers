@@ -14,4 +14,4 @@ typedef struct TerepMap {
 
 TerepMap* map_load();
 void map_unload(TerepMap* map);
-void map_render(TerepMap* map);
+void map_render(TerepMap* map, bool wireframe);
