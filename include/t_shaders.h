@@ -9,7 +9,6 @@ static const char* affine_vs = "#version 330\n"
                                "gl_Position = mvp*vec4(vertexPosition);\n"
                                "fragTexCoord = vec3(vertexTexCoord*gl_Position.z, gl_Position.z);\n"
                                "}\n";
-
 static const char* affine_fs = "#version 330\n"
                                "in vec3 fragTexCoord;\n"
                                "uniform sampler2D texture0;\n"
