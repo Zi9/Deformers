@@ -19,7 +19,6 @@ for shdrfile in glob.glob(f"{SHADERS_FOLDER}/*"):
     shf.close()
     shaders.append(shader)
 
-    
 outfile.write("#pragma once\n\n")
 for shader in shaders:
     outfile.write(f"static const char* {shader['name']}_{shader['type']} = ")
