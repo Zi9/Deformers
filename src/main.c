@@ -1,7 +1,4 @@
-#include "game/game.h"
 #include "core/config.h"
+#include "game/game.h"
 
-int main()
-{
-    game_main(config_get_default());
-}
+int main() { game_main(config_get_default()); }

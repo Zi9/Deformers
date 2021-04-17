@@ -6,10 +6,7 @@
 #define GAME_WINDOW_TITLE "Deformers - A recreation of Terep2"
 #define EDITOR_WINDOW_TITLE "Deformers - A recreation of Terep2 - Editor Mode"
 
-typedef enum {
-    MODE_GAME,
-    MODE_EDITOR
-} StartMode;
+typedef enum { MODE_GAME, MODE_EDITOR } StartMode;
 
 struct RenderConfig {
     uint16_t width;
