@@ -11,7 +11,9 @@ Config config_get_default()
             .upscaleMultiplier = 2
         },
         .dataPath = "./",
-        .skyColor = (Color) {93, 199, 255, 255}
+        .skyColor = (Color) {93, 199, 255, 255},
+        .restart = false,
+        .mode = MODE_GAME
     };
     return cfg;
 }
