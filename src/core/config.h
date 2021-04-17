@@ -11,7 +11,7 @@ typedef enum {
     MODE_EDITOR
 } StartMode;
 
-struct RendererConfig {
+struct RenderConfig {
     uint16_t width;
     uint16_t height;
     uint8_t upscaleMultiplier;
@@ -19,7 +19,7 @@ struct RendererConfig {
 };
 
 typedef struct Config {
-    struct RendererConfig renderer;
+    struct RenderConfig render;
     char* dataPath;
     Color skyColor;
     bool restart;

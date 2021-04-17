@@ -9,15 +9,15 @@
 int game_main(Config initialConfig)
 {
     Config cfg = initialConfig;
-    InitWindow(cfg.renderer.width * cfg.renderer.upscaleMultiplier, cfg.renderer.height * cfg.renderer.upscaleMultiplier, GAME_WINDOW_TITLE);
+    InitWindow(cfg.render.width * cfg.render.upscaleMultiplier, cfg.render.height * cfg.render.upscaleMultiplier, GAME_WINDOW_TITLE);
     SetTargetFPS(60);
     SetWindowPosition(1800, 300);
 
     RenderTexture2D target;
-    if (cfg.renderer.upscaleMultiplier == 1) {
-        target = LoadRenderTexture(cfg.renderer.width * cfg.renderer.upscaleMultiplier, cfg.renderer.height * cfg.renderer.upscaleMultiplier);
+    if (cfg.render.upscaleMultiplier == 1) {
+        target = LoadRenderTexture(cfg.render.width * cfg.render.upscaleMultiplier, cfg.render.height * cfg.render.upscaleMultiplier);
     } else {
-        target = LoadRenderTexture(cfg.renderer.width, cfg.renderer.height);
+        target = LoadRenderTexture(cfg.render.width, cfg.render.height);
     }
 
     DFCamera* cam = camera_create();
@@ -26,7 +26,7 @@ int game_main(Config initialConfig)
         camera_update(cam, GetFrameTime());
 
         if (IsKeyPressed(KEY_F7))
-            cfg.renderer.wireframe = !cfg.renderer.wireframe;
+            cfg.render.wireframe = !cfg.render.wireframe;
 
         BeginDrawing();
 
@@ -35,14 +35,14 @@ int game_main(Config initialConfig)
         ClearBackground(cfg.skyColor);
         BeginMode3D(cam->rlCam);
 
-        map_render(map, cfg.renderer.wireframe);
+        map_render(map, cfg.render.wireframe);
 
         EndMode3D();
 
         EndTextureMode();
 
         DrawTexturePro(target.texture, (Rectangle){0, 0, target.texture.width, -target.texture.height},
-                       (Rectangle){0, 0, cfg.renderer.width * cfg.renderer.upscaleMultiplier, cfg.renderer.height * cfg.renderer.upscaleMultiplier},
+                       (Rectangle){0, 0, cfg.render.width * cfg.render.upscaleMultiplier, cfg.render.height * cfg.render.upscaleMultiplier},
                        (Vector2){0, 0}, 0.0f, WHITE);
         EndDrawing();
     }

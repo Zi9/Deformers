@@ -5,7 +5,7 @@
 Config config_get_default()
 {
     Config cfg = {
-        .renderer = {
+        .render = {
             .width = 320,
             .height = 200,
             .upscaleMultiplier = 2,
