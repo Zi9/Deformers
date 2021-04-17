@@ -4,7 +4,7 @@ import glob
 SHADERS_FOLDER = sys.argv[1]
 SHADERS_OUTPUT = sys.argv[2]
 
-outfile = open(f"{SHADERS_OUTPUT}/t_shaders.h", "w")
+outfile = open(f"{SHADERS_OUTPUT}/shaders.h", "w")
 
 shaders = []
 

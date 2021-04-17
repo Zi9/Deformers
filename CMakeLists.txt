@@ -2,16 +2,16 @@ cmake_minimum_required(VERSION 3.0)
 project(Deformers)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
-include_directories(include)
+include_directories(src)
 
-file(GLOB SRC src/*.c)
+file(GLOB_RECURSE SRC src/*.c)
 
 add_custom_command(
-    OUTPUT include/t_shaders.h
-    COMMAND python ../shaderbuild.py ../shaders/ ../include/
-    DEPENDS ./shaders/affine.fs ./shaders/affine.vs
+    OUTPUT src/core/t_shaders.h
+    COMMAND python ../tools/shaderbuild.py ../src/core/shaders/ ../src/core/
+    DEPENDS ./src/core/shaders/affine.fs ./src/core/shaders/affine.vs
     VERBATIM
 )
 
-add_executable(Deformers ${SRC} include/t_shaders.h)
+add_executable(Deformers ${SRC} src/core/t_shaders.h)
 target_link_libraries(Deformers raylib m)

@@ -1,23 +1,24 @@
-#include "t_map.h"
+#include "map.h"
 
 #include <math.h>
 #include <rlgl.h>
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "t_pcx.h"
-#include "t_shaders.h"
+#include "pcx.h"
+#include "shaders.h"
 
 #define TMAP_SCALE 1.0f
 #define TMAP_HEIGHT_SCALE 0.075f
 #define TMAP_UVMULT 0.0625f
 
 #define TEREP_MAPSZ 256
+#define TEREP_TEXSZ 256
 #define TEREP_HEIGHTMAP_FILE "map.pcx"
 #define TEREP_COLORMAP_FILE "col.pcx"
 #define TEREP_MAPTEX_FILE "maptex.pcx"
 
-void build_map_model(TerepMap* map)
+void build_map_model(DFMap* map)
 {
     Mesh msh = {0};
     msh.triangleCount = (map->size - 1) * (map->size - 1) * 2;
@@ -91,25 +92,14 @@ void build_map_model(TerepMap* map)
     map->model = LoadModelFromMesh(msh);
 }
 
-TerepMap* map_load()
+DFMap* map_load()
 {
-    TerepMap* map = malloc(sizeof *map);
+    DFMap* map = malloc(sizeof *map);
     map->size = TEREP_MAPSZ;
 
-    struct PCXData* pcx;
-
-    pcx = pcx_load(TEREP_COLORMAP_FILE);
-    map->colormap = pcx->indices;
-    pcx_cleanup(pcx, false);
-
-    pcx = pcx_load(TEREP_HEIGHTMAP_FILE);
-    map->heightmap = pcx->indices;
-    pcx_cleanup(pcx, false);
-
-    pcx = pcx_load(TEREP_MAPTEX_FILE);
-    pcx_to_image(pcx, &(map->image));
-    pcx_cleanup(pcx, true);
-
+    map->colormap = pcx_load_as_array(TEREP_COLORMAP_FILE);
+    map->heightmap = pcx_load_as_array(TEREP_HEIGHTMAP_FILE);
+    map->image = pcx_load_as_image(TEREP_MAPTEX_FILE);
     map->texture = LoadTextureFromImage(map->image);
 
     build_map_model(map);
@@ -117,7 +107,7 @@ TerepMap* map_load()
     map->model.materials[0].maps[MAP_DIFFUSE].texture = map->texture;
     return map;
 }
-void map_unload(TerepMap* map)
+void map_unload(DFMap* map)
 {
     free(map->colormap);
     free(map->heightmap);
@@ -127,7 +117,7 @@ void map_unload(TerepMap* map)
     UnloadTexture(map->texture);
     free(map);
 }
-void map_render(TerepMap* map, bool wireframe)
+void map_render(DFMap* map, bool wireframe)
 {
     if (wireframe)
         DrawModelWires(map->model, (Vector3){0.0f, -10.0f, 0.0f}, 1.0f, WHITE);

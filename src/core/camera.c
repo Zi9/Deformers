@@ -1,4 +1,4 @@
-#include "t_camera.h"
+#include "camera.h"
 
 #include <math.h>
 #include <raymath.h>
@@ -8,9 +8,9 @@
 #define CAMERA_DEFAULT_SPEED 10.0f
 #define CAMERA_SPEED_MOD_MULT 3
 
-TerepCamera* camera_create()
+DFCamera* camera_create()
 {
-    TerepCamera* cam = malloc(sizeof *cam);
+    DFCamera* cam = malloc(sizeof *cam);
     cam->freecamEnabled = false;
 
     cam->mouseSens = CAMERA_DEFAULT_MOUSE_SENS;
@@ -32,20 +32,20 @@ TerepCamera* camera_create()
     cam->rlCam.type = CAMERA_PERSPECTIVE;
     return cam;
 }
-void camera_destroy(TerepCamera* cam) { free(cam); }
-void camera_enable_freecam(TerepCamera* cam)
+void camera_destroy(DFCamera* cam) { free(cam); }
+void camera_enable_freecam(DFCamera* cam)
 {
     cam->freecamEnabled = true;
     DisableCursor();
     cam->mousePos = GetMousePosition();
     cam->prevMousePos = GetMousePosition();
 }
-void camera_disable_freecam(TerepCamera* cam)
+void camera_disable_freecam(DFCamera* cam)
 {
     cam->freecamEnabled = false;
     EnableCursor();
 }
-void camera_update(TerepCamera* cam, float dt)
+void camera_update(DFCamera* cam, float dt)
 {
     if (IsKeyPressed(KEY_F3)) {
         if (cam->freecamEnabled)
