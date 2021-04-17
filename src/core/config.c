@@ -8,7 +8,8 @@ Config config_get_default()
         .renderer = {
             .width = 320,
             .height = 200,
-            .upscaleMultiplier = 2
+            .upscaleMultiplier = 2,
+            .wireframe = false
         },
         .dataPath = "./",
         .skyColor = (Color) {93, 199, 255, 255},

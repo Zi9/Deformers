@@ -15,6 +15,7 @@ struct RendererConfig {
     uint16_t width;
     uint16_t height;
     uint8_t upscaleMultiplier;
+    bool wireframe;
 };
 
 typedef struct Config {

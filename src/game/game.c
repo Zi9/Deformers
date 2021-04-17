@@ -22,12 +22,11 @@ int game_main(Config initialConfig)
 
     DFCamera* cam = camera_create();
     DFMap* map = map_load();
-    bool wireframe = false;
     while (!WindowShouldClose()) {
         camera_update(cam, GetFrameTime());
 
         if (IsKeyPressed(KEY_F7))
-            wireframe = !wireframe;
+            cfg.renderer.wireframe = !cfg.renderer.wireframe;
 
         BeginDrawing();
 
@@ -36,7 +35,7 @@ int game_main(Config initialConfig)
         ClearBackground(cfg.skyColor);
         BeginMode3D(cam->rlCam);
 
-        map_render(map, wireframe);
+        map_render(map, cfg.renderer.wireframe);
 
         EndMode3D();
 
