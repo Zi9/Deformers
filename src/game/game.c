@@ -28,6 +28,10 @@ int game_main(Config initialConfig)
 
         if (IsKeyPressed(KEY_F7))
             cfg.render.wireframe = !cfg.render.wireframe;
+        if (IsKeyPressed(KEY_F8))
+            map->model.materials[0].shader = map->affineShd;
+        if (IsKeyPressed(KEY_F9))
+            map->model.materials[0].shader = map->normalShd;
 
         BeginDrawing();
 
@@ -35,7 +39,6 @@ int game_main(Config initialConfig)
 
         ClearBackground(cfg.skyColor);
         BeginMode3D(cam->rlCam);
-
         map_render(map, cfg.render.wireframe);
 
         EndMode3D();

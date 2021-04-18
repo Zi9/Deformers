@@ -103,7 +103,8 @@ DFMap* map_load()
     map->texture = LoadTextureFromImage(map->image);
 
     build_map_model(map);
-    map->model.materials[0].shader = LoadShaderCode(affine_vs, affine_fs);
+    map->affineShd = LoadShaderCode(affine_vs, affine_fs);
+    map->normalShd = map->model.materials[0].shader;
     map->model.materials[0].maps[MAP_DIFFUSE].texture = map->texture;
     return map;
 }
@@ -111,7 +112,8 @@ void map_unload(DFMap* map)
 {
     free(map->colormap);
     free(map->heightmap);
-    UnloadShader(map->model.materials[0].shader);
+    UnloadShader(map->normalShd);
+    UnloadShader(map->affineShd);
     UnloadModel(map->model);
     UnloadImage(map->image);
     UnloadTexture(map->texture);

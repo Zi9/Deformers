@@ -10,6 +10,8 @@ typedef struct DFMap {
     Image image;
     Texture2D texture;
     Model model;
+    Shader normalShd;
+    Shader affineShd;
 } DFMap;
 
 DFMap* map_load();
