@@ -47,6 +47,9 @@ void camera_disable_freecam(DFCamera* cam)
 }
 void camera_update(DFCamera* cam, float dt)
 {
+    if (IsMouseButtonDown(MOUSE_MIDDLE_BUTTON)) {
+        cam->rlCam.fovy += GetMouseWheelMove();
+    }
     if (IsKeyPressed(KEY_F3)) {
         if (cam->freecamEnabled)
             camera_disable_freecam(cam);
