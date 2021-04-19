@@ -119,10 +119,7 @@ void map_unload(DFMap* map)
     UnloadTexture(map->texture);
     free(map);
 }
-void map_render(DFMap* map, bool wireframe)
+void map_render(DFMap* map)
 {
-    if (wireframe)
-        DrawModelWires(map->model, (Vector3){0.0f, -10.0f, 0.0f}, 1.0f, WHITE);
-    else
-        DrawModel(map->model, (Vector3){0.0f, -10.0f, 0.0f}, 1.0f, WHITE);
+    DrawModel(map->model, (Vector3){0.0f, -10.0f, 0.0f}, 1.0f, WHITE);
 }

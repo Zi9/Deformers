@@ -16,4 +16,4 @@ typedef struct DFMap {
 
 DFMap* map_load();
 void map_unload(DFMap* map);
-void map_render(DFMap* map, bool wireframe);
+void map_render(DFMap* map);

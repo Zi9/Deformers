@@ -1,6 +1,7 @@
 #include "game/game.h"
 
 #include <raylib.h>
+#include <rlgl.h>
 
 #include "core/camera.h"
 #include "core/map.h"
@@ -11,7 +12,9 @@ int game_main(Config initialConfig)
     InitWindow(cfg.render.width * cfg.render.upscaleMultiplier, cfg.render.height * cfg.render.upscaleMultiplier,
                GAME_WINDOW_TITLE);
     SetTargetFPS(60);
-    SetWindowPosition(1800, 300);
+
+    // !This is temporary
+    SetWindowPosition(1366, 0);
 
     RenderTexture2D target;
     if (cfg.render.upscaleMultiplier == 1) {
@@ -39,7 +42,11 @@ int game_main(Config initialConfig)
 
         ClearBackground(cfg.skyColor);
         BeginMode3D(cam->rlCam);
-        map_render(map, cfg.render.wireframe);
+        if (cfg.render.wireframe)
+            rlEnableWireMode();
+        map_render(map);
+        if (cfg.render.wireframe)
+            rlDisableWireMode();
 
         EndMode3D();
 
