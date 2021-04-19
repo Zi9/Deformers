@@ -88,7 +88,7 @@ void build_map_model(DFMap* map)
     msh.vboId = malloc(sizeof(uint32_t) * 7);
     msh.vertices = vertices;
     msh.texcoords = uvs;
-    rlLoadMesh(&msh, false);
+    UploadMesh(&msh, false);
     map->model = LoadModelFromMesh(msh);
 }
 
@@ -103,7 +103,7 @@ DFMap* map_load()
     map->texture = LoadTextureFromImage(map->image);
 
     build_map_model(map);
-    map->affineShd = LoadShaderCode(affine_vs, affine_fs);
+    map->affineShd = LoadShaderFromMemory(affine_vs, affine_fs);
     map->normalShd = map->model.materials[0].shader;
     map->model.materials[0].maps[MAP_DIFFUSE].texture = map->texture;
     return map;
@@ -112,7 +112,6 @@ void map_unload(DFMap* map)
 {
     free(map->colormap);
     free(map->heightmap);
-    UnloadShader(map->normalShd);
     UnloadShader(map->affineShd);
     UnloadModel(map->model);
     UnloadImage(map->image);

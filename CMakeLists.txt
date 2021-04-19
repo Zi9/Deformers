@@ -13,5 +13,7 @@ add_custom_command(
     VERBATIM
 )
 
+add_subdirectory(vendor/raylib)
+
 add_executable(Deformers ${SRC} src/core/t_shaders.h)
 target_link_libraries(Deformers raylib m)

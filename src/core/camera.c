@@ -29,7 +29,7 @@ DFCamera* camera_create()
     cam->rlCam.target = cam->forward;
     cam->rlCam.up = cam->up;
     cam->rlCam.fovy = 45.0f;
-    cam->rlCam.type = CAMERA_PERSPECTIVE;
+    cam->rlCam.projection = CAMERA_PERSPECTIVE;
     return cam;
 }
 void camera_destroy(DFCamera* cam) { free(cam); }
