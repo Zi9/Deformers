@@ -2,4 +2,4 @@
 
 #include "core/config.h"
 
-int game_main(Config initialConfig);
+Config game_main(Config initialConfig);

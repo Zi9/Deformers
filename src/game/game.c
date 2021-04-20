@@ -6,12 +6,13 @@
 #include "core/camera.h"
 #include "core/map.h"
 
-int game_main(Config initialConfig)
+Config game_main(Config initialConfig)
 {
     Config cfg = initialConfig;
     InitWindow(cfg.render.width * cfg.render.upscaleMultiplier, cfg.render.height * cfg.render.upscaleMultiplier,
                GAME_WINDOW_TITLE);
     SetTargetFPS(60);
+    SetExitKey(KEY_CAPS_LOCK);
 
     // !This is temporary
     SetWindowPosition(1366, 0);
@@ -25,9 +26,12 @@ int game_main(Config initialConfig)
     }
 
     DFCamera* cam = camera_create();
-    DFMap* map = map_load();
+    DFMap* map = map_load(cfg.dataPath);
     while (!WindowShouldClose()) {
         camera_update(cam, GetFrameTime());
+
+        if (IsKeyPressed(KEY_F1))
+            cfg.restart = false;
 
         if (IsKeyPressed(KEY_F7))
             cfg.render.wireframe = !cfg.render.wireframe;
@@ -37,11 +41,10 @@ int game_main(Config initialConfig)
             map->model.materials[0].shader = map->normalShd;
 
         BeginDrawing();
-
         BeginTextureMode(target);
-
         ClearBackground(cfg.skyColor);
         BeginMode3D(cam->rlCam);
+
         if (cfg.render.wireframe)
             rlEnableWireMode();
         map_render(map);
@@ -49,7 +52,6 @@ int game_main(Config initialConfig)
             rlDisableWireMode();
 
         EndMode3D();
-
         EndTextureMode();
 
         DrawTexturePro(target.texture, (Rectangle){0, 0, target.texture.width, -target.texture.height},
@@ -61,5 +63,5 @@ int game_main(Config initialConfig)
     map_unload(map);
     camera_destroy(cam);
     CloseWindow();
-    return 0;
+    return cfg;
 }

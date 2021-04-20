@@ -4,6 +4,7 @@
 #include <rlgl.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "pcx.h"
 #include "shaders.h"
@@ -92,14 +93,26 @@ void build_map_model(DFMap* map)
     map->model = LoadModelFromMesh(msh);
 }
 
-DFMap* map_load()
+DFMap* map_load(const char* basePath)
 {
     DFMap* map = malloc(sizeof *map);
     map->size = TEREP_MAPSZ;
 
-    map->colormap = pcx_load_as_array(TEREP_COLORMAP_FILE);
-    map->heightmap = pcx_load_as_array(TEREP_HEIGHTMAP_FILE);
-    map->image = pcx_load_as_image(TEREP_MAPTEX_FILE);
+    char cmapPath[256];
+    strncpy(cmapPath, basePath, 240);
+    strcat(cmapPath, TEREP_COLORMAP_FILE);
+
+    char hmapPath[256];
+    strncpy(hmapPath, basePath, 240);
+    strcat(hmapPath, TEREP_HEIGHTMAP_FILE);
+
+    char tmapPath[256];
+    strncpy(tmapPath, basePath, 240);
+    strcat(tmapPath, TEREP_MAPTEX_FILE);
+
+    map->colormap = pcx_load_as_array(cmapPath);
+    map->heightmap = pcx_load_as_array(hmapPath);
+    map->image = pcx_load_as_image(tmapPath);
     map->texture = LoadTextureFromImage(map->image);
 
     build_map_model(map);
@@ -120,5 +133,6 @@ void map_unload(DFMap* map)
 }
 void map_render(DFMap* map)
 {
-    DrawModel(map->model, (Vector3){0.0f, -10.0f, 0.0f}, 1.0f, WHITE);
+    if (map != NULL)
+        DrawModel(map->model, (Vector3){0.0f, -10.0f, 0.0f}, 1.0f, WHITE);
 }
