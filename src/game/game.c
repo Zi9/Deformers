@@ -5,6 +5,7 @@
 
 #include "core/camera.h"
 #include "core/map.h"
+#include "core/car.h"
 
 Config game_main(Config initialConfig)
 {
@@ -27,18 +28,19 @@ Config game_main(Config initialConfig)
 
     DFCamera* cam = camera_create();
     DFMap* map = map_load(cfg.dataPath);
+    DFCar* car = car_load("../data/car1.dat");
     while (!WindowShouldClose()) {
         camera_update(cam, GetFrameTime());
 
-        if (IsKeyPressed(KEY_F1))
-            cfg.restart = false;
+        // if (IsKeyPressed(KEY_F1))
+        //     cfg.restart = false;
 
         if (IsKeyPressed(KEY_F7))
             cfg.render.wireframe = !cfg.render.wireframe;
-        if (IsKeyPressed(KEY_F8))
-            map->model.materials[0].shader = map->affineShd;
-        if (IsKeyPressed(KEY_F9))
-            map->model.materials[0].shader = map->normalShd;
+        // if (IsKeyPressed(KEY_F8))
+        //     map->model.materials[0].shader = map->affineShd;
+        // if (IsKeyPressed(KEY_F9))
+        //     map->model.materials[0].shader = map->normalShd;
 
         BeginDrawing();
         BeginTextureMode(target);
@@ -48,6 +50,7 @@ Config game_main(Config initialConfig)
         if (cfg.render.wireframe)
             rlEnableWireMode();
         map_render(map);
+        car_render(car);
         if (cfg.render.wireframe)
             rlDisableWireMode();
 
@@ -61,6 +64,7 @@ Config game_main(Config initialConfig)
         EndDrawing();
     }
     map_unload(map);
+    car_unload(car);
     camera_destroy(cam);
     CloseWindow();
     return cfg;
