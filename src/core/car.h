@@ -3,16 +3,26 @@
 #include <stdint.h>
 #include <raylib.h>
 
+enum PointType {
+    DFCAR_POINT_GEOMETRY,
+    DFCAR_POINT_WHEEL_FL,
+    DFCAR_POINT_WHEEL_FR,
+    DFCAR_POINT_WHEEL_RL,
+    DFCAR_POINT_WHEEL_RR,
+    DFCAR_POINT_CAMERA
+};
+typedef struct DFCarPoint {
+    Vector3 pos;
+    uint8_t type;
+} DFCarPoint;
+
 typedef struct DFCar {
-    Vector3 wheel_fl;
-    Vector3 wheel_fr;
-    Vector3 wheel_rl;
-    Vector3 wheel_rr;
+    uint16_t pointCount;
+    DFCarPoint points[128];
 
-    Vector3 driverView;
-
-    uint16_t geoPointCount;
-    Vector3 geoPoints[128];
+    uint16_t testcount;
+    uint16_t a[256];
+    uint16_t b[256];
 } DFCar;
 
 DFCar* car_load(const char* path);
