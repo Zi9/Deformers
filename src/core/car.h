@@ -11,6 +11,12 @@ enum PointType {
     DFCAR_POINT_WHEEL_RR,
     DFCAR_POINT_CAMERA
 };
+enum SegmentType {
+    DFCAR_SEGMENT_NORMAL,
+    DFCAR_SEGMENT_SUSP_FRONT,
+    DFCAR_SEGMENT_SUSP_REAR,
+    DFCAR_SEGMENT_SUSP_EXTRA
+};
 typedef struct DFCarPoint {
     Vector3 pos;
     uint8_t type;
@@ -18,6 +24,7 @@ typedef struct DFCarPoint {
 typedef struct DFCarSegment {
     uint16_t pointA;
     uint16_t pointB;
+    uint8_t type;
 } DFCarSegment;
 
 typedef struct DFCar {

@@ -16,7 +16,9 @@ struct __attribute__((packed)) datapoint1 {
 };
 struct __attribute__((packed)) datapoint2 {
     uint16_t a, b;
-    uint8_t misc[10];
+    uint16_t v1, v2;
+    uint16_t type;
+    uint16_t v3, v4;
 };
 
 void load_car_chunk1(DFCar* car, uint8_t* buf, uint16_t start)
@@ -67,6 +69,22 @@ void load_car_chunk2(DFCar* car, uint8_t* buf, uint16_t start)
         struct datapoint2* curPoint = (struct datapoint2*)(buf + start + 2 + (i * CHUNKSZ));
         car->segments[i].pointA = curPoint->a;
         car->segments[i].pointB = curPoint->b;
+        switch (curPoint->type)
+        {
+            case 0:
+                car->segments[i].type = DFCAR_SEGMENT_SUSP_EXTRA;
+                break;
+            case 1:
+                car->segments[i].type = DFCAR_SEGMENT_NORMAL;
+                break;
+            case 6:
+                car->segments[i].type = DFCAR_SEGMENT_SUSP_REAR;
+                break;
+            case 10:
+                car->segments[i].type = DFCAR_SEGMENT_SUSP_FRONT;
+                break;
+        }
+        printf("%i: \t %i\t%i\t%i\t%i\n", car->segmentCount, curPoint->v1, curPoint->v2, curPoint->v3, curPoint->v4);
         car->segmentCount++;
     }
     #undef CHUNKSZ
@@ -101,12 +119,45 @@ void car_unload(DFCar* car)
 }
 void car_render(DFCar* car)
 {
+    Color col;
     for (size_t i = 0; i < car->pointCount; i++)
     {
-        DrawCube(car->points[i].pos, 0.05f, 0.05f, 0.05f, BLACK);
+        switch (car->points[i].type)
+        {
+            case DFCAR_POINT_GEOMETRY:
+                col = BLACK;
+                break;
+            case DFCAR_POINT_CAMERA:
+                col = MAGENTA;
+                break;
+            case DFCAR_POINT_WHEEL_FL:
+            case DFCAR_POINT_WHEEL_FR:
+                col = BLUE;
+                break;
+            case DFCAR_POINT_WHEEL_RL:
+            case DFCAR_POINT_WHEEL_RR:
+                col = RED;
+                break;
+        }
+        DrawCube(car->points[i].pos, 0.05f, 0.05f, 0.05f, col);
     }
     for (size_t i = 0; i < car->segmentCount; i++)
     {
-        DrawLine3D(car->points[car->segments[i].pointA].pos, car->points[car->segments[i].pointB].pos, WHITE);
+        switch (car->segments[i].type)
+        {
+            case DFCAR_SEGMENT_NORMAL:
+                col = WHITE;
+                break;
+            case DFCAR_SEGMENT_SUSP_FRONT:
+                col = BLUE;
+                break;
+            case DFCAR_SEGMENT_SUSP_REAR:
+                col = RED;
+                break;
+            case DFCAR_SEGMENT_SUSP_EXTRA:
+                col = GREEN;
+                break;
+        }
+        DrawLine3D(car->points[car->segments[i].pointA].pos, car->points[car->segments[i].pointB].pos, col);
     }
 }
