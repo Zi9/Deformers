@@ -16,9 +16,9 @@ struct __attribute__((packed)) datapoint1 {
 };
 struct __attribute__((packed)) datapoint2 {
     uint16_t a, b;
-    uint16_t v1, v2;
+    uint16_t stiffness, somephysvar1;
     uint16_t type;
-    uint16_t v3, v4;
+    uint16_t somephysvar2, somephysvar3;
 };
 
 void load_car_chunk1(DFCar* car, uint8_t* buf, uint16_t start)
@@ -67,31 +67,31 @@ void load_car_chunk1(DFCar* car, uint8_t* buf, uint16_t start)
 void load_car_chunk2(DFCar* car, uint8_t* buf, uint16_t start)
 {
     uint16_t count = *(buf + start);
-    car->segmentCount = 0;
+    car->physSegmentCount = 0;
 #define CHUNKSZ 14
     for (size_t i = 0; i < count; i++) {
         struct datapoint2* curPoint = (struct datapoint2*)(buf + start + 2 + (i * CHUNKSZ));
-        car->segments[i].pointA = curPoint->a;
-        car->segments[i].pointB = curPoint->b;
+        car->physSegments[i].pointA = curPoint->a;
+        car->physSegments[i].pointB = curPoint->b;
         switch (curPoint->type) {
         case 0:
-            car->segments[i].type = DFCAR_SEGMENT_SUSP_EXTRA;
+            car->physSegments[i].type = DFCAR_SEGMENT_SUSP_EXTRA;
             break;
         case 1:
-            car->segments[i].type = DFCAR_SEGMENT_NORMAL;
+            car->physSegments[i].type = DFCAR_SEGMENT_NORMAL;
             break;
         case 4:
         case 6:
-            car->segments[i].type = DFCAR_SEGMENT_SUSP_REAR;
+            car->physSegments[i].type = DFCAR_SEGMENT_SUSP_REAR;
             break;
         case 10:
         case 12:
-            car->segments[i].type = DFCAR_SEGMENT_SUSP_FRONT;
+            car->physSegments[i].type = DFCAR_SEGMENT_SUSP_FRONT;
             break;
         default:
             printf("Unknown type segment: %i\n", curPoint->type);
         }
-        car->segmentCount++;
+        car->physSegmentCount++;
     }
 #undef CHUNKSZ
 }
@@ -141,12 +141,15 @@ void car_render(DFCar* car)
             break;
         }
         DrawCube(car->points[i].pos, 0.05f, 0.05f, 0.05f, col);
+#ifdef CAR_PHYS_DEBUG_DRAW
         if (car->points[i].diameter > 0) {
             DrawCircle3D(car->points[i].pos, car->points[i].diameter, (Vector3){0.0f, 1.0f, 0.0f}, 90, PINK);
         }
+#endif
     }
-    for (size_t i = 0; i < car->segmentCount; i++) {
-        switch (car->segments[i].type) {
+#ifdef CAR_PHYS_DEBUG_DRAW
+    for (size_t i = 0 i < car->physSegmentCount; i++) {
+        switch (car->physSegments[i].type) {
         case DFCAR_SEGMENT_NORMAL:
             col = WHITE;
             break;
@@ -160,6 +163,7 @@ void car_render(DFCar* car)
             col = GREEN;
             break;
         }
-        DrawLine3D(car->points[car->segments[i].pointA].pos, car->points[car->segments[i].pointB].pos, col);
+        DrawLine3D(car->points[car->physSegments[i].pointA].pos, car->points[car->physSegments[i].pointB].pos, col);
     }
+#endif
 }

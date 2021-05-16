@@ -22,18 +22,18 @@ typedef struct DFCarPoint {
     uint8_t type;
     float diameter;
 } DFCarPoint;
-typedef struct DFCarSegment {
+typedef struct DFCarPhysSegment {
     uint16_t pointA;
     uint16_t pointB;
     uint8_t type;
-} DFCarSegment;
+} DFCarPhysSegment;
 
 typedef struct DFCar {
     uint16_t pointCount;
     DFCarPoint points[128];
 
-    uint16_t segmentCount;
-    DFCarSegment segments[256];
+    uint16_t physSegmentCount;
+    DFCarPhysSegment physSegments[256];
 } DFCar;
 
 DFCar* car_load(const char* path);
