@@ -32,9 +32,9 @@ void load_car_chunk1(DFCar* car, uint8_t* buf, uint16_t start)
         car->points[i].pos.y = curPoint->z / 100.0f;
         car->points[i].pos.z = curPoint->y / 100.0f;
         if (curPoint->diameter > 0) {
-            car->points[i].diam = curPoint->diameter / 100.0f;
+            car->points[i].diameter = curPoint->diameter / 100.0f;
         } else {
-            car->points[i].diam = 0.0f;
+            car->points[i].diameter = 0.0f;
         }
 
         switch (curPoint->pointType) {
@@ -141,8 +141,8 @@ void car_render(DFCar* car)
             break;
         }
         DrawCube(car->points[i].pos, 0.05f, 0.05f, 0.05f, col);
-        if (car->points[i].diam > 0) {
-            DrawCircle3D(car->points[i].pos, car->points[i].diam, (Vector3){0.0f, 1.0f, 0.0f}, 90, PINK);
+        if (car->points[i].diameter > 0) {
+            DrawCircle3D(car->points[i].pos, car->points[i].diameter, (Vector3){0.0f, 1.0f, 0.0f}, 90, PINK);
         }
     }
     for (size_t i = 0; i < car->segmentCount; i++) {

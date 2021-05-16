@@ -20,7 +20,7 @@ enum SegmentType {
 typedef struct DFCarPoint {
     Vector3 pos;
     uint8_t type;
-    float diam;
+    float diameter;
 } DFCarPoint;
 typedef struct DFCarSegment {
     uint16_t pointA;
