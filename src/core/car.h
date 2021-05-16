@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdint.h>
 #include <raylib.h>
+#include <stdint.h>
 
 enum PointType {
     DFCAR_POINT_GEOMETRY,
@@ -20,6 +20,7 @@ enum SegmentType {
 typedef struct DFCarPoint {
     Vector3 pos;
     uint8_t type;
+    float diam;
 } DFCarPoint;
 typedef struct DFCarSegment {
     uint16_t pointA;
