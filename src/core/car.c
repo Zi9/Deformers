@@ -55,6 +55,8 @@ void load_car_chunk1(DFCar* car, uint8_t* buf, uint16_t start)
             case 65535:
                 car->points[i].type = DFCAR_POINT_CAMERA;
                 break;
+            default:
+                printf("Unknown type point: %i\n", curPoint->pointType);
         }
     }
     #undef CHUNKSZ
@@ -77,12 +79,16 @@ void load_car_chunk2(DFCar* car, uint8_t* buf, uint16_t start)
             case 1:
                 car->segments[i].type = DFCAR_SEGMENT_NORMAL;
                 break;
+            case 4:
             case 6:
                 car->segments[i].type = DFCAR_SEGMENT_SUSP_REAR;
                 break;
             case 10:
+            case 12:
                 car->segments[i].type = DFCAR_SEGMENT_SUSP_FRONT;
                 break;
+            default:
+                printf("Unknown type segment: %i\n", curPoint->type);
         }
         printf("%i: \t %i\t%i\t%i\t%i\n", car->segmentCount, curPoint->v1, curPoint->v2, curPoint->v3, curPoint->v4);
         car->segmentCount++;

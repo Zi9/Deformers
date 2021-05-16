@@ -15,7 +15,7 @@ enum SegmentType {
     DFCAR_SEGMENT_NORMAL,
     DFCAR_SEGMENT_SUSP_FRONT,
     DFCAR_SEGMENT_SUSP_REAR,
-    DFCAR_SEGMENT_SUSP_EXTRA
+    DFCAR_SEGMENT_SUSP_EXTRA,
 };
 typedef struct DFCarPoint {
     Vector3 pos;
