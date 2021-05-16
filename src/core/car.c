@@ -21,10 +21,10 @@ struct __attribute__((packed)) datapoint2 {
 
 void load_car_chunk1(DFCar* car, uint8_t* buf, uint16_t start)
 {
-    uint16_t pointcount = *(buf + start);
-    car->pointCount = pointcount;
+    uint16_t count = *(buf + start);
+    car->pointCount = count;
     #define CHUNKSZ 28
-    for (size_t i = 0; i < pointcount; i++)
+    for (size_t i = 0; i < count; i++)
     {
         struct datapoint1* curPoint = (struct datapoint1*)(buf + start + 2 + (i * CHUNKSZ));
         car->points[i].pos.x = curPoint->x/100.0f;
@@ -59,22 +59,22 @@ void load_car_chunk1(DFCar* car, uint8_t* buf, uint16_t start)
 }
 void load_car_chunk2(DFCar* car, uint8_t* buf, uint16_t start)
 {
-    uint16_t pointcount = *(buf + start);
-    car->testcount = 0;
+    uint16_t count = *(buf + start);
+    car->segmentCount = 0;
     #define CHUNKSZ 14
-    for (size_t i = 0; i < pointcount; i++)
+    for (size_t i = 0; i < count; i++)
     {
         struct datapoint2* curPoint = (struct datapoint2*)(buf + start + 2 + (i * CHUNKSZ));
-        car->a[i] = curPoint->a;
-        car->b[i] = curPoint->b;
-        car->testcount++;
+        car->segments[i].pointA = curPoint->a;
+        car->segments[i].pointB = curPoint->b;
+        car->segmentCount++;
     }
     #undef CHUNKSZ
 }
 
 struct __attribute__((packed)) carDatHeader {
-    uint16_t pointsStart;
-    uint16_t phyChkStart;
+    uint16_t chunk1Start;
+    uint16_t chunk2Start;
     uint16_t chunk3Start;
 };
 DFCar* car_load(const char* path)
@@ -88,8 +88,8 @@ DFCar* car_load(const char* path)
     fread(buf, fileSZ, 1, f);
 
     struct carDatHeader* hdr = (struct carDatHeader*)buf;
-    load_car_chunk1(car, buf, hdr->pointsStart);
-    load_car_chunk2(car, buf, hdr->phyChkStart);
+    load_car_chunk1(car, buf, hdr->chunk1Start);
+    load_car_chunk2(car, buf, hdr->chunk2Start);
     free(buf);
 
     fclose(f);
@@ -105,8 +105,8 @@ void car_render(DFCar* car)
     {
         DrawCube(car->points[i].pos, 0.05f, 0.05f, 0.05f, BLACK);
     }
-    for (size_t i = 0; i < car->testcount; i++)
+    for (size_t i = 0; i < car->segmentCount; i++)
     {
-        DrawLine3D(car->points[car->a[i]].pos, car->points[car->b[i]].pos, WHITE);
+        DrawLine3D(car->points[car->segments[i].pointA].pos, car->points[car->segments[i].pointB].pos, WHITE);
     }
 }

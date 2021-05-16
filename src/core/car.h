@@ -15,14 +15,17 @@ typedef struct DFCarPoint {
     Vector3 pos;
     uint8_t type;
 } DFCarPoint;
+typedef struct DFCarSegment {
+    uint16_t pointA;
+    uint16_t pointB;
+} DFCarSegment;
 
 typedef struct DFCar {
     uint16_t pointCount;
     DFCarPoint points[128];
 
-    uint16_t testcount;
-    uint16_t a[256];
-    uint16_t b[256];
+    uint16_t segmentCount;
+    DFCarSegment segments[256];
 } DFCar;
 
 DFCar* car_load(const char* path);
