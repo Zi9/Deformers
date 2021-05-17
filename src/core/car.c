@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define CAR_PHYS_DEBUG_DRAW 0
+
 struct __attribute__((packed)) datapoint1 {
     uint16_t pad1;
     int16_t x;
@@ -141,13 +143,13 @@ void car_render(DFCar* car)
             break;
         }
         DrawCube(car->points[i].pos, 0.05f, 0.05f, 0.05f, col);
-#ifdef CAR_PHYS_DEBUG_DRAW
+#if CAR_PHYS_DEBUG_DRAW == 1
         if (car->points[i].diameter > 0) {
             DrawCircle3D(car->points[i].pos, car->points[i].diameter, (Vector3){0.0f, 1.0f, 0.0f}, 90, PINK);
         }
 #endif
     }
-#ifdef CAR_PHYS_DEBUG_DRAW
+#if CAR_PHYS_DEBUG_DRAW == 1
     for (size_t i = 0; i < car->physSegmentCount; i++) {
         switch (car->physSegments[i].type) {
         case DFCAR_SEGMENT_NORMAL:
