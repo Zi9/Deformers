@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "debug.h"
+
 #define CAR_PHYS_DEBUG_DRAW 0
 
 struct __attribute__((packed)) datapoint1 {
@@ -16,13 +18,13 @@ struct __attribute__((packed)) datapoint1 {
     int16_t diameter;
     uint16_t pointType;
 };
-void load_car_chunk1(DFCar* car, uint8_t* buf, uint16_t start)
+void load_car_chunk1(DFCar* car, uint8_t* buf)
 {
-    uint16_t count = *(buf + start);
+    uint16_t count = *(buf);
     car->pointCount = count;
 #define CHUNKSZ 28
     for (size_t i = 0; i < count; i++) {
-        struct datapoint1* curPoint = (struct datapoint1*)(buf + start + 2 + (i * CHUNKSZ));
+        struct datapoint1* curPoint = (struct datapoint1*)(buf + 2 + (i * CHUNKSZ));
         car->points[i].pos.x = curPoint->x / 100.0f;
         car->points[i].pos.y = curPoint->z / 100.0f;
         car->points[i].pos.z = curPoint->y / 100.0f;
@@ -66,13 +68,13 @@ struct __attribute__((packed)) datapoint2 {
     uint16_t type;
     uint16_t somephysvar2, somephysvar3;
 };
-void load_car_chunk2(DFCar* car, uint8_t* buf, uint16_t start)
+void load_car_chunk2(DFCar* car, uint8_t* buf)
 {
-    uint16_t count = *(buf + start);
+    uint16_t count = *(buf);
     car->physSegmentCount = 0;
 #define CHUNKSZ 14
     for (size_t i = 0; i < count; i++) {
-        struct datapoint2* curPoint = (struct datapoint2*)(buf + start + 2 + (i * CHUNKSZ));
+        struct datapoint2* curPoint = (struct datapoint2*)(buf + 2 + (i * CHUNKSZ));
         car->physSegments[i].pointA = curPoint->a;
         car->physSegments[i].pointB = curPoint->b;
         switch (curPoint->type) {
@@ -98,6 +100,22 @@ void load_car_chunk2(DFCar* car, uint8_t* buf, uint16_t start)
 #undef CHUNKSZ
 }
 
+void load_car_chunk3(DFCar* car, uint8_t* buf)
+{
+    uint16_t ofs = 0;
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        if ((uint8_t)*(buf + ofs) == 4)
+        {
+            print_hexdump(buf + ofs, 12, 16);
+        }
+        else {
+            break;
+        }
+    }
+}
+
+
 struct __attribute__((packed)) carDatHeader {
     uint16_t chunk1Start;
     uint16_t chunk2Start;
@@ -114,8 +132,9 @@ DFCar* car_load(const char* path)
     fread(buf, fileSZ, 1, f);
 
     struct carDatHeader* hdr = (struct carDatHeader*)buf;
-    load_car_chunk1(car, buf, hdr->chunk1Start);
-    load_car_chunk2(car, buf, hdr->chunk2Start);
+    load_car_chunk1(car, buf + hdr->chunk1Start);
+    load_car_chunk2(car, buf + hdr->chunk2Start);
+    load_car_chunk3(car, buf + hdr->chunk3Start);
     free(buf);
 
     fclose(f);
