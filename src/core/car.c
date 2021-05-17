@@ -14,13 +14,6 @@ struct __attribute__((packed)) datapoint1 {
     int16_t diameter;
     uint16_t pointType;
 };
-struct __attribute__((packed)) datapoint2 {
-    uint16_t a, b;
-    uint16_t stiffness, somephysvar1;
-    uint16_t type;
-    uint16_t somephysvar2, somephysvar3;
-};
-
 void load_car_chunk1(DFCar* car, uint8_t* buf, uint16_t start)
 {
     uint16_t count = *(buf + start);
@@ -64,6 +57,13 @@ void load_car_chunk1(DFCar* car, uint8_t* buf, uint16_t start)
     }
 #undef CHUNKSZ
 }
+
+struct __attribute__((packed)) datapoint2 {
+    uint16_t a, b;
+    uint16_t stiffness, somephysvar1;
+    uint16_t type;
+    uint16_t somephysvar2, somephysvar3;
+};
 void load_car_chunk2(DFCar* car, uint8_t* buf, uint16_t start)
 {
     uint16_t count = *(buf + start);

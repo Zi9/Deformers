@@ -4,8 +4,8 @@
 #include <rlgl.h>
 
 #include "core/camera.h"
-#include "core/map.h"
 #include "core/car.h"
+#include "core/map.h"
 
 Config game_main(Config initialConfig)
 {
