@@ -148,7 +148,7 @@ void car_render(DFCar* car)
 #endif
     }
 #ifdef CAR_PHYS_DEBUG_DRAW
-    for (size_t i = 0 i < car->physSegmentCount; i++) {
+    for (size_t i = 0; i < car->physSegmentCount; i++) {
         switch (car->physSegments[i].type) {
         case DFCAR_SEGMENT_NORMAL:
             col = WHITE;
