@@ -3,9 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "debug.h"
-
-#define CAR_PHYS_DEBUG_DRAW 0
+#define CAR_PHYS_DEBUG_DRAW 1
 
 struct __attribute__((packed)) datapoint1 {
     uint16_t pad1;
@@ -18,35 +16,34 @@ struct __attribute__((packed)) datapoint1 {
     int16_t diameter;
     uint16_t pointType;
 };
-void load_car_chunk1(DFCar* car, uint8_t* buf)
+void load_car_chunk1(DFCar* car, FILE* fp)
 {
-    uint16_t count = *(buf);
-    car->pointCount = count;
-#define CHUNKSZ 28
-    for (size_t i = 0; i < count; i++) {
-        struct datapoint1* curPoint = (struct datapoint1*)(buf + 2 + (i * CHUNKSZ));
-        car->points[i].pos.x = curPoint->x / 100.0f;
-        car->points[i].pos.y = curPoint->z / 100.0f;
-        car->points[i].pos.z = curPoint->y / 100.0f;
-        if (curPoint->diameter > 0) {
-            car->points[i].diameter = curPoint->diameter / 100.0f;
+    fread(&(car->pointCount), sizeof car->pointCount, 1, fp);
+    struct datapoint1 curPoint;
+    for (size_t i = 0; i < car->pointCount; i++) {
+        fread(&curPoint, sizeof curPoint, 1, fp);
+        car->points[i].pos.x = curPoint.x / 100.0f;
+        car->points[i].pos.y = curPoint.z / 100.0f;
+        car->points[i].pos.z = curPoint.y / 100.0f;
+        if (curPoint.diameter > 0) {
+            car->points[i].diameter = curPoint.diameter / 100.0f;
         } else {
             car->points[i].diameter = 0.0f;
         }
 
-        switch (curPoint->pointType) {
+        switch (curPoint.pointType) {
         case 0:
             car->points[i].type = DFCAR_POINT_GEOMETRY;
             break;
         case 1:
-            if (curPoint->x < 0) {
+            if (curPoint.x < 0) {
                 car->points[i].type = DFCAR_POINT_WHEEL_RL;
             } else {
                 car->points[i].type = DFCAR_POINT_WHEEL_RR;
             }
             break;
         case 2:
-            if (curPoint->x < 0) {
+            if (curPoint.x < 0) {
                 car->points[i].type = DFCAR_POINT_WHEEL_FL;
             } else {
                 car->points[i].type = DFCAR_POINT_WHEEL_FR;
@@ -56,10 +53,9 @@ void load_car_chunk1(DFCar* car, uint8_t* buf)
             car->points[i].type = DFCAR_POINT_CAMERA;
             break;
         default:
-            printf("Unknown type point: %i\n", curPoint->pointType);
+            printf("Unknown type point: %i\n", curPoint.pointType);
         }
     }
-#undef CHUNKSZ
 }
 
 struct __attribute__((packed)) datapoint2 {
@@ -68,16 +64,17 @@ struct __attribute__((packed)) datapoint2 {
     uint16_t type;
     uint16_t somephysvar2, somephysvar3;
 };
-void load_car_chunk2(DFCar* car, uint8_t* buf)
+void load_car_chunk2(DFCar* car, FILE* fp)
 {
-    uint16_t count = *(buf);
+    uint16_t count;
+    fread(&count, sizeof count, 1, fp);
     car->physSegmentCount = 0;
-#define CHUNKSZ 14
+    struct datapoint2 curPoint;
     for (size_t i = 0; i < count; i++) {
-        struct datapoint2* curPoint = (struct datapoint2*)(buf + 2 + (i * CHUNKSZ));
-        car->physSegments[i].pointA = curPoint->a;
-        car->physSegments[i].pointB = curPoint->b;
-        switch (curPoint->type) {
+        fread(&curPoint, sizeof curPoint, 1, fp);
+        car->physSegments[i].pointA = curPoint.a;
+        car->physSegments[i].pointB = curPoint.b;
+        switch (curPoint.type) {
         case 0:
             car->physSegments[i].type = DFCAR_SEGMENT_SUSP_EXTRA;
             break;
@@ -93,28 +90,115 @@ void load_car_chunk2(DFCar* car, uint8_t* buf)
             car->physSegments[i].type = DFCAR_SEGMENT_SUSP_FRONT;
             break;
         default:
-            printf("Unknown type segment: %i\n", curPoint->type);
+            printf("Unknown type segment: %i\n", curPoint.type);
         }
         car->physSegmentCount++;
     }
 #undef CHUNKSZ
 }
 
-void load_car_chunk3(DFCar* car, uint8_t* buf)
+void load_car_chunk3(DFCar* car, FILE* fp)
 {
-    uint16_t ofs = 0;
-    for (uint32_t i = 0; i < 4; i++)
-    {
-        if ((uint8_t)*(buf + ofs) == 4)
-        {
-            print_hexdump(buf + ofs, 12, 16);
-        }
-        else {
+    uint8_t dtype;
+    while (fread(&dtype, sizeof dtype, 1, fp) != 0) {
+        printf("%ld -> ", ftell(fp) - 1);
+        switch (dtype) {
+        case 0:
+            printf("0\n");
             break;
+        case 1:
+            printf("1:\t");
+            uint8_t data1[4];
+            fread(&data1, sizeof(uint8_t), 4, fp);
+            for (size_t i = 0; i < 4; i++) {
+                printf("%d\t", data1[i]);
+            }
+            printf("\n");
+            break;
+        case 3:
+            printf("3:\t");
+            int16_t data3[6];
+            fread(&data3, sizeof(int16_t), 6, fp);
+            for (size_t i = 0; i < 6; i++) {
+                printf("%d\t", data3[i]);
+            }
+            printf("\n");
+            break;
+        case 4:
+            int16_t data4[8];
+            uint8_t count;
+            fread(&count, sizeof count, 1, fp);
+            printf("4-%d:\t", count);
+            count += 2;
+            if (count > 8) {
+                printf("ChunkID4: Failure when parsing, too many data points\n");
+                return;
+            }
+            fread(&data4, sizeof(int16_t), count, fp);
+            for (size_t i = 0; i < count; i++) {
+                printf("%d\t", data4[i]);
+            }
+            printf("\n");
+            break;
+        case 8:
+            uint8_t sz;
+            uint16_t data[32];
+            fread(&sz, sizeof sz, 1, fp);
+            printf("8-%d:\t", sz);
+            switch (sz) {
+            case 3:
+                fread(&data, sizeof(uint16_t), 12, fp);
+                for (size_t i = 0; i < 12; i++) {
+                    printf("%d ", data[i]);
+                }
+                printf("\n");
+                break;
+            case 4:
+                fread(&data, sizeof(uint16_t), 15, fp);
+                for (size_t i = 0; i < 15; i++) {
+                    printf("%d ", data[i]);
+                }
+                printf("\n");
+                break;
+            case 5:
+                fread(&data, sizeof(uint16_t), 18, fp);
+                for (size_t i = 0; i < 18; i++) {
+                    printf("%d ", data[i]);
+                }
+                printf("\n");
+                break;
+            default:
+                printf("Unknown decoding error parsing 08 block\n");
+                break;
+            }
+            break;
+        case 10:
+            uint16_t data10[3];
+            printf("10:\t");
+            fread(&data10, sizeof(uint16_t), 3, fp);
+            for (size_t i = 0; i < 3; i++) {
+                printf("%d ", data10[i]);
+            }
+            printf("\n");
+            break;
+        case 69:
+        case 246:
+            uint8_t data246[19];
+            printf("246:\t");
+            fread(&data246, sizeof(uint8_t), 19, fp);
+            for (size_t i = 0; i < 19; i++) {
+                printf("%d ", data246[i]);
+            }
+            printf("\n");
+            break;
+            break;
+        default:
+            printf("Unknown data block %d at %ld\n", dtype, ftell(fp));
+            return;
         }
     }
+    printf("Reached end of car data file\n");
 }
-
 
 struct __attribute__((packed)) carDatHeader {
     uint16_t chunk1Start;
@@ -125,17 +209,13 @@ DFCar* car_load(const char* path)
 {
     DFCar* car = malloc(sizeof *car);
     FILE* f = fopen(path, "r");
-    fseek(f, 0, SEEK_END);
-    long fileSZ = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    uint8_t* buf = malloc(fileSZ);
-    fread(buf, fileSZ, 1, f);
 
-    struct carDatHeader* hdr = (struct carDatHeader*)buf;
-    load_car_chunk1(car, buf + hdr->chunk1Start);
-    load_car_chunk2(car, buf + hdr->chunk2Start);
-    load_car_chunk3(car, buf + hdr->chunk3Start);
-    free(buf);
+    struct carDatHeader hdr;
+    fread(&hdr, sizeof hdr, 1, f);
+    fseek(f, hdr.chunk1Start, SEEK_SET);
+    load_car_chunk1(car, f);
+    load_car_chunk2(car, f);
+    load_car_chunk3(car, f);
 
     fclose(f);
     return car;
