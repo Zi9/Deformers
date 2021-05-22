@@ -101,10 +101,8 @@ void load_car_chunk3(DFCar* car, FILE* fp)
 {
     uint8_t dtype;
     while (fread(&dtype, sizeof dtype, 1, fp) != 0) {
-        printf("%ld -> ", ftell(fp) - 1);
         switch (dtype) {
         case 0:
-            printf("0\n");
             break;
         case 1:
             printf("1:\t");
@@ -113,7 +111,6 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             for (size_t i = 0; i < 4; i++) {
                 printf("%d\t", data1[i]);
             }
-            printf("\n");
             break;
         case 3:
             printf("3:\t");
@@ -122,7 +119,6 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             for (size_t i = 0; i < 6; i++) {
                 printf("%d\t", data3[i]);
             }
-            printf("\n");
             break;
         case 4:
             int16_t data4[8];
@@ -138,7 +134,6 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             for (size_t i = 0; i < count; i++) {
                 printf("%d\t", data4[i]);
             }
-            printf("\n");
             break;
         case 8:
             uint8_t sz;
@@ -149,23 +144,20 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             case 3:
                 fread(&data, sizeof(uint16_t), 12, fp);
                 for (size_t i = 0; i < 12; i++) {
-                    printf("%d ", data[i]);
+                    printf("%d\t", data[i]);
                 }
-                printf("\n");
                 break;
             case 4:
                 fread(&data, sizeof(uint16_t), 15, fp);
                 for (size_t i = 0; i < 15; i++) {
-                    printf("%d ", data[i]);
+                    printf("%d\t", data[i]);
                 }
-                printf("\n");
                 break;
             case 5:
                 fread(&data, sizeof(uint16_t), 18, fp);
                 for (size_t i = 0; i < 18; i++) {
-                    printf("%d ", data[i]);
+                    printf("%d\t", data[i]);
                 }
-                printf("\n");
                 break;
             default:
                 printf("Unknown decoding error parsing 08 block\n");
@@ -177,9 +169,8 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             printf("10:\t");
             fread(&data10, sizeof(uint16_t), 3, fp);
             for (size_t i = 0; i < 3; i++) {
-                printf("%d ", data10[i]);
+                printf("%d\t", data10[i]);
             }
-            printf("\n");
             break;
         case 69:
         case 246:
@@ -187,17 +178,19 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             printf("246:\t");
             fread(&data246, sizeof(uint8_t), 19, fp);
             for (size_t i = 0; i < 19; i++) {
-                printf("%d ", data246[i]);
+                printf("%d\t", data246[i]);
             }
-            printf("\n");
             break;
             break;
         default:
-            printf("Unknown data block %d at %ld\n", dtype, ftell(fp));
+            printf("Unknown data block %d", dtype);
             return;
         }
+        if (dtype != 0) {
+            printf("- @ %ld\n", ftell(fp) - 1);
+        }
     }
-    printf("Reached end of car data file\n");
+    printf("INFO: CARLOAD: Reached end of car data file\n");
 }
 
 struct __attribute__((packed)) carDatHeader {
