@@ -17,6 +17,11 @@ enum SegmentType {
     DFCAR_SEGMENT_SUSP_REAR,
     DFCAR_SEGMENT_SUSP_EXTRA,
 };
+enum DrivetrainMode {
+    DFCAR_DRIVETRAIN_RWD = 0,
+    DFCAR_DRIVETRAIN_FWD = 1,
+    DFCAR_DRIVETRAIN_AWD = 2,
+};
 typedef struct DFCarPoint {
     Vector3 pos;
     uint8_t type;
@@ -34,6 +39,8 @@ typedef struct DFCar {
 
     uint16_t physSegmentCount;
     DFCarPhysSegment physSegments[256];
+    uint16_t currentSelSeg;
+    uint8_t drivetrainMode;
 } DFCar;
 
 DFCar* car_load(const char* path);

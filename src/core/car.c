@@ -56,6 +56,7 @@ void load_car_chunk1(DFCar* car, FILE* fp)
             printf("Unknown type point: %i\n", curPoint.pointType);
         }
     }
+    printf("INFO: CARLOAD: Loaded %d points\n", car->pointCount);
 }
 
 struct __attribute__((packed)) datapoint2 {
@@ -94,7 +95,7 @@ void load_car_chunk2(DFCar* car, FILE* fp)
         }
         car->physSegmentCount++;
     }
-#undef CHUNKSZ
+    printf("INFO: CARLOAD: Loaded %d physics segments\n", car->physSegmentCount);
 }
 
 void load_car_chunk3(DFCar* car, FILE* fp)
@@ -106,8 +107,8 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             break;
         case 1:
             printf("\e[0;31m1:\t");
-            uint8_t data1[4];
-            fread(&data1, sizeof(uint8_t), 4, fp);
+            int8_t data1[4];
+            fread(&data1, sizeof(int8_t), 4, fp);
             for (size_t i = 0; i < 4; i++) {
                 printf("%d\t", data1[i]);
             }
@@ -185,6 +186,8 @@ struct __attribute__((packed)) carDatHeader {
     uint16_t chunk1Start;
     uint16_t chunk2Start;
     uint16_t chunk3Start;
+    uint16_t unknown;
+    uint16_t drivetrainMode;
 };
 DFCar* car_load(const char* path)
 {
@@ -193,6 +196,21 @@ DFCar* car_load(const char* path)
 
     struct carDatHeader hdr;
     fread(&hdr, sizeof hdr, 1, f);
+    car->drivetrainMode = hdr.drivetrainMode;
+    switch (car->drivetrainMode)
+    {
+        case DFCAR_DRIVETRAIN_RWD:
+            printf("INFO: CARLOAD: Car is RWD\n");
+            break;
+        case DFCAR_DRIVETRAIN_FWD:
+            printf("INFO: CARLOAD: Car is FWD\n");
+            break;
+        case DFCAR_DRIVETRAIN_AWD:
+            printf("INFO: CARLOAD: Car is AWD\n");
+            break;
+        default:
+            printf("INFO: CARLOAD: Unknown drivetrain mode!\n");
+    }
     fseek(f, hdr.chunk1Start, SEEK_SET);
     load_car_chunk1(car, f);
     load_car_chunk2(car, f);
@@ -231,19 +249,23 @@ void car_render(DFCar* car)
     }
 #if CAR_PHYS_DEBUG_DRAW == 1
     for (size_t i = 0; i < car->physSegmentCount; i++) {
-        switch (car->physSegments[i].type) {
-        case DFCAR_SEGMENT_NORMAL:
-            col = WHITE;
-            break;
-        case DFCAR_SEGMENT_SUSP_FRONT:
-            col = BLUE;
-            break;
-        case DFCAR_SEGMENT_SUSP_REAR:
-            col = RED;
-            break;
-        case DFCAR_SEGMENT_SUSP_EXTRA:
-            col = GREEN;
-            break;
+        if (car->currentSelSeg == i) {
+            col = PURPLE;
+        } else {
+            switch (car->physSegments[i].type) {
+            case DFCAR_SEGMENT_NORMAL:
+                col = WHITE;
+                break;
+            case DFCAR_SEGMENT_SUSP_FRONT:
+                col = BLUE;
+                break;
+            case DFCAR_SEGMENT_SUSP_REAR:
+                col = RED;
+                break;
+            case DFCAR_SEGMENT_SUSP_EXTRA:
+                col = GREEN;
+                break;
+            }
         }
         DrawLine3D(car->points[car->physSegments[i].pointA].pos, car->points[car->physSegments[i].pointB].pos, col);
     }

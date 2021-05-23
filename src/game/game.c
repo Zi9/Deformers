@@ -29,6 +29,7 @@ Config game_main(Config initialConfig)
     DFCamera* cam = camera_create();
     DFMap* map = map_load(cfg.dataPath);
     DFCar* car = car_load("../data/car1.dat");
+    car->currentSelSeg = 0;
     while (!WindowShouldClose()) {
         camera_update(cam, GetFrameTime());
 
@@ -37,6 +38,10 @@ Config game_main(Config initialConfig)
 
         if (IsKeyPressed(KEY_F7))
             cfg.render.wireframe = !cfg.render.wireframe;
+        if (IsKeyPressed(KEY_RIGHT))
+            car->currentSelSeg++;
+        if (IsKeyPressed(KEY_LEFT))
+            car->currentSelSeg--;
         // if (IsKeyPressed(KEY_F8))
         //     map->model.materials[0].shader = map->affineShd;
         // if (IsKeyPressed(KEY_F9))
@@ -61,6 +66,7 @@ Config game_main(Config initialConfig)
                        (Rectangle){0, 0, cfg.render.width * cfg.render.upscaleMultiplier,
                                    cfg.render.height * cfg.render.upscaleMultiplier},
                        (Vector2){0, 0}, 0.0f, WHITE);
+        DrawText(TextFormat("CUR SEG: %i", car->currentSelSeg), 0, 0, 20, RED);
         EndDrawing();
     }
     map_unload(map);
