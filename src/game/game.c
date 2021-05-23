@@ -43,7 +43,7 @@ Config game_main(Config initialConfig)
         if (IsKeyPressed(KEY_LEFT))
             car->currentSelSeg--;
         // if (IsKeyPressed(KEY_F8))
-        //     map->model.materials[0].shader = map->affineShd;
+            map->model.materials[0].shader = map->affineShd;
         // if (IsKeyPressed(KEY_F9))
         //     map->model.materials[0].shader = map->normalShd;
 
@@ -66,7 +66,9 @@ Config game_main(Config initialConfig)
                        (Rectangle){0, 0, cfg.render.width * cfg.render.upscaleMultiplier,
                                    cfg.render.height * cfg.render.upscaleMultiplier},
                        (Vector2){0, 0}, 0.0f, WHITE);
-        DrawText(TextFormat("CUR SEG: %i", car->currentSelSeg), 0, 0, 20, RED);
+        DrawText("Deformers - Development Build", 1, 1, 20, BLACK);
+        DrawText("Deformers - Development Build", 0, 0, 20, RED);
+        DrawText(TextFormat("CUR SEG: %i", car->currentSelSeg), 0, 25, 10, BLUE);
         EndDrawing();
     }
     map_unload(map);
