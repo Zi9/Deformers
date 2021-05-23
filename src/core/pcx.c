@@ -135,6 +135,7 @@ Image pcx_load_as_image(const char* path)
     img.height = PCX_DEFAULT_SIZE;
     img.format = 7;
     img.mipmaps = 1;
+    free(pcx->indices);
     free(pcx);
     return img;
 }
