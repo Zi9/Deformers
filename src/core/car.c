@@ -105,7 +105,7 @@ void load_car_chunk3(DFCar* car, FILE* fp)
         case 0:
             break;
         case 1:
-            printf("1:\t");
+            printf("\e[0;31m1:\t");
             uint8_t data1[4];
             fread(&data1, sizeof(uint8_t), 4, fp);
             for (size_t i = 0; i < 4; i++) {
@@ -113,7 +113,7 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             }
             break;
         case 3:
-            printf("3:\t");
+            printf("\e[0;32m3:\t");
             int16_t data3[6];
             fread(&data3, sizeof(int16_t), 6, fp);
             for (size_t i = 0; i < 6; i++) {
@@ -122,51 +122,38 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             break;
         case 4:
             int16_t data4[8];
-            uint8_t count;
-            fread(&count, sizeof count, 1, fp);
-            printf("4-%d:\t", count);
-            count += 2;
-            if (count > 8) {
+            uint8_t count4;
+            fread(&count4, sizeof count4, 1, fp);
+            printf("\e[0;33m4-%d:\t", count4);
+            count4 += 2;
+            if (count4 > 8) {
                 printf("ChunkID4: Failure when parsing, too many data points\n");
                 return;
             }
-            fread(&data4, sizeof(int16_t), count, fp);
-            for (size_t i = 0; i < count; i++) {
+            fread(&data4, sizeof(int16_t), count4, fp);
+            for (size_t i = 0; i < count4; i++) {
                 printf("%d\t", data4[i]);
             }
             break;
         case 8:
-            uint8_t sz;
-            uint16_t data[32];
-            fread(&sz, sizeof sz, 1, fp);
-            printf("8-%d:\t", sz);
-            switch (sz) {
-            case 3:
-                fread(&data, sizeof(uint16_t), 12, fp);
-                for (size_t i = 0; i < 12; i++) {
-                    printf("%d\t", data[i]);
-                }
-                break;
-            case 4:
-                fread(&data, sizeof(uint16_t), 15, fp);
-                for (size_t i = 0; i < 15; i++) {
-                    printf("%d\t", data[i]);
-                }
-                break;
-            case 5:
-                fread(&data, sizeof(uint16_t), 18, fp);
-                for (size_t i = 0; i < 18; i++) {
-                    printf("%d\t", data[i]);
-                }
-                break;
-            default:
-                printf("Unknown decoding error parsing 08 block\n");
-                break;
+            uint16_t data8[32];
+            uint8_t count8;
+            fread(&count8, sizeof count8, 1, fp);
+            printf("\e[0;34m8-%d:\t", count8);
+            count8 += 1;
+            count8 *= 3;
+            if (count8 > 32) {
+                printf("ChunkID8: Failure when parsing, too many data points\n");
+                return;
+            }
+            fread(&data8, sizeof(uint16_t), count8, fp);
+            for (size_t i = 0; i < count8; i++) {
+                printf("%d\t", data8[i]);
             }
             break;
         case 10:
             uint16_t data10[3];
-            printf("10:\t");
+            printf("\e[0;35m10:\t");
             fread(&data10, sizeof(uint16_t), 3, fp);
             for (size_t i = 0; i < 3; i++) {
                 printf("%d\t", data10[i]);
@@ -175,7 +162,7 @@ void load_car_chunk3(DFCar* car, FILE* fp)
         case 69:
         case 246:
             uint8_t data246[19];
-            printf("246:\t");
+            printf("\e[0;36m246:\t");
             fread(&data246, sizeof(uint8_t), 19, fp);
             for (size_t i = 0; i < 19; i++) {
                 printf("%d\t", data246[i]);
@@ -187,10 +174,11 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             return;
         }
         if (dtype != 0) {
-            printf("- @ %ld\n", ftell(fp) - 1);
+            // printf("- @ %ld\n", ftell(fp) - 1);
+            printf("\n");
         }
     }
-    printf("INFO: CARLOAD: Reached end of car data file\n");
+    printf("\e[0mINFO: CARLOAD: Reached end of car data file\n");
 }
 
 struct __attribute__((packed)) carDatHeader {
