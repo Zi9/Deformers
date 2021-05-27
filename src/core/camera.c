@@ -6,33 +6,32 @@
 
 #define CAMERA_DEFAULT_MOUSE_SENS 0.2f
 #define CAMERA_DEFAULT_SPEED 10.0f
-#define CAMERA_SPEED_MOD_MULT 3
+#define CAMERA_SPEED_MOD_MULT 4
 
-DFCamera* camera_create()
+DFCamera camera_create()
 {
-    DFCamera* cam = malloc(sizeof *cam);
-    cam->freecamEnabled = false;
+    DFCamera cam = {0};
+    cam.freecamEnabled = false;
 
-    cam->mouseSens = CAMERA_DEFAULT_MOUSE_SENS;
-    cam->camSpeed = CAMERA_DEFAULT_SPEED;
+    cam.mouseSens = CAMERA_DEFAULT_MOUSE_SENS;
+    cam.camSpeed = CAMERA_DEFAULT_SPEED;
 
-    cam->yaw = -90.0f;
-    cam->pitch = 0.0f;
-    cam->worldUp = (Vector3){0.0f, 1.0f, 0.0f};
-    cam->right = (Vector3){1.0f, 0.0f, 0.0f};
-    cam->up = (Vector3){0.0f, 1.0f, 0.0f};
-    cam->forward = (Vector3){0.0f, 0.0f, -1.0f};
+    cam.yaw = -90.0f;
+    cam.pitch = 0.0f;
+    cam.worldUp = (Vector3){0.0f, 1.0f, 0.0f};
+    cam.right = (Vector3){1.0f, 0.0f, 0.0f};
+    cam.up = (Vector3){0.0f, 1.0f, 0.0f};
+    cam.forward = (Vector3){0.0f, 0.0f, -1.0f};
 
-    cam->mouseDelta = (Vector2){0.0f, 0.0f};
+    cam.mouseDelta = (Vector2){0.0f, 0.0f};
 
-    cam->rlCam.position = (Vector3){0.0f, 0.0f, 0.0f};
-    cam->rlCam.target = cam->forward;
-    cam->rlCam.up = cam->up;
-    cam->rlCam.fovy = 45.0f;
-    cam->rlCam.projection = CAMERA_PERSPECTIVE;
+    cam.rlCam.position = (Vector3){0.0f, 0.0f, 0.0f};
+    cam.rlCam.target = cam.forward;
+    cam.rlCam.up = cam.up;
+    cam.rlCam.fovy = 45.0f;
+    cam.rlCam.projection = CAMERA_PERSPECTIVE;
     return cam;
 }
-void camera_destroy(DFCamera* cam) { free(cam); }
 void camera_enable_freecam(DFCamera* cam)
 {
     cam->freecamEnabled = true;
