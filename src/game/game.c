@@ -2,10 +2,49 @@
 
 #include <raylib.h>
 #include <rlgl.h>
+#include <stdlib.h>
 
 #include "core/camera.h"
 #include "core/car.h"
 #include "core/map.h"
+
+struct GameState {
+    DFCamera activeCam;
+    DFMap* currentMap;
+    DFCar* currentCar;
+    struct {
+        bool wireframe;
+    } render;
+} game = {0};
+
+void game_load(Config cfg)
+{
+    game.activeCam = camera_create();
+    game.currentMap = map_load(cfg.dataPath);
+    game.currentCar = car_load("../data/car1.dat");
+    game.currentCar->currentSelSeg = 0;
+    game.render.wireframe = false;
+}
+
+void game_unload()
+{
+    if (game.currentMap != NULL) {
+        map_unload(game.currentMap);
+        game.currentMap = NULL;
+    }
+    if (game.currentCar != NULL) {
+        car_unload(game.currentCar);
+        game.currentCar = NULL;
+    }
+}
+
+void game_render()
+{
+    if (game.currentMap != NULL)
+        map_render(game.currentMap);
+    if (game.currentCar != NULL)
+        car_render(game.currentCar);
+}
 
 Config game_main(Config initialConfig)
 {
@@ -26,40 +65,39 @@ Config game_main(Config initialConfig)
         target = LoadRenderTexture(cfg.render.width, cfg.render.height);
     }
 
-    DFCamera* cam = camera_create();
-    DFMap* map = map_load(cfg.dataPath);
-    DFCar* car = car_load("../data/car1.dat");
-    car->currentSelSeg = 0;
+    game_load(cfg);
+
     while (!WindowShouldClose()) {
-        camera_update(cam, GetFrameTime());
+        camera_update(&game.activeCam, GetFrameTime());
 
         // if (IsKeyPressed(KEY_F1))
         //     cfg.restart = false;
 
         if (IsKeyPressed(KEY_F7))
-            cfg.render.wireframe = !cfg.render.wireframe;
+            game.render.wireframe = !game.render.wireframe;
         if (IsKeyPressed(KEY_RIGHT))
-            car->currentSelSeg++;
+            game.currentCar->currentSelSeg++;
         if (IsKeyPressed(KEY_LEFT))
-            car->currentSelSeg--;
+            game.currentCar->currentSelSeg--;
         // if (IsKeyPressed(KEY_F8))
-            map->model.materials[0].shader = map->affineShd;
+        game.currentMap->model.materials[0].shader = game.currentMap->affineShd;
         // if (IsKeyPressed(KEY_F9))
         //     map->model.materials[0].shader = map->normalShd;
 
         BeginDrawing();
         BeginTextureMode(target);
         ClearBackground(cfg.skyColor);
-        BeginMode3D(cam->rlCam);
 
-        if (cfg.render.wireframe)
+        BeginMode3D(game.activeCam.rlCam);
+
+        if (game.render.wireframe)
             rlEnableWireMode();
-        map_render(map);
-        car_render(car);
-        if (cfg.render.wireframe)
+        game_render();
+        if (game.render.wireframe)
             rlDisableWireMode();
 
         EndMode3D();
+
         EndTextureMode();
 
         DrawTexturePro(target.texture, (Rectangle){0, 0, target.texture.width, -target.texture.height},
@@ -68,12 +106,9 @@ Config game_main(Config initialConfig)
                        (Vector2){0, 0}, 0.0f, WHITE);
         DrawText("Deformers - Development Build", 1, 1, 20, BLACK);
         DrawText("Deformers - Development Build", 0, 0, 20, RED);
-        DrawText(TextFormat("CUR SEG: %i", car->currentSelSeg), 0, 25, 10, BLUE);
         EndDrawing();
     }
-    map_unload(map);
-    car_unload(car);
-    camera_destroy(cam);
+    game_unload();
     CloseWindow();
     return cfg;
 }
