@@ -8,7 +8,7 @@ Config config_terep()
             .width = 320,
             .height = 200,
             .upscaleMultiplier = 2},
-        .dataPath = "./data",
+        .baseDataPath = "./data",
         .scenario = "terep",
         .skyColor = (Color){93, 199, 255, 255},
         .restart = false,

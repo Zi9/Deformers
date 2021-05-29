@@ -12,7 +12,7 @@ typedef struct Config {
         uint16_t height;
         uint8_t upscaleMultiplier;
     } render;
-    char* dataPath;
+    char* baseDataPath;
     char* scenario;
     Color skyColor;
     bool restart;

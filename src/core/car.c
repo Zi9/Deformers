@@ -61,9 +61,9 @@ void load_car_chunk1(DFCar* car, FILE* fp)
 
 struct __attribute__((packed)) datapoint2 {
     uint16_t a, b;
-    uint16_t stiffness, somephysvar1;
+    uint16_t other1, other2;
     uint16_t type;
-    uint16_t somephysvar2, somephysvar3;
+    uint16_t other3, other4;
 };
 void load_car_chunk2(DFCar* car, FILE* fp)
 {
@@ -93,6 +93,10 @@ void load_car_chunk2(DFCar* car, FILE* fp)
         default:
             printf("Unknown type segment: %i\n", curPoint.type);
         }
+        car->physSegments[i].other1 = curPoint.other1;
+        car->physSegments[i].other2 = curPoint.other2;
+        car->physSegments[i].other3 = curPoint.other3;
+        car->physSegments[i].other4 = curPoint.other4;
         car->physSegmentCount++;
     }
     printf("INFO: CARLOAD: Loaded %d physics segments\n", car->physSegmentCount);
@@ -114,6 +118,7 @@ void load_car_chunk3(DFCar* car, FILE* fp)
             }
             break;
         case 3:
+            // possibly some culling thing, changing these values seems to do render glitches
             printf("\e[0;32m3:\t");
             int16_t data3[6];
             fread(&data3, sizeof(int16_t), 6, fp);

@@ -28,9 +28,9 @@ typedef struct DFCarPoint {
     float diameter;
 } DFCarPoint;
 typedef struct DFCarPhysSegment {
-    uint16_t pointA;
-    uint16_t pointB;
+    uint16_t pointA, pointB;
     uint8_t type;
+    uint16_t other1, other2, other3, other4;
 } DFCarPhysSegment;
 
 typedef struct DFCar {
@@ -40,6 +40,7 @@ typedef struct DFCar {
     uint16_t physSegmentCount;
     DFCarPhysSegment physSegments[256];
     uint16_t currentSelSeg;
+
     uint8_t drivetrainMode;
 } DFCar;
 
