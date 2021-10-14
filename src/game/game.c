@@ -20,8 +20,8 @@ struct GameState {
 void game_load(Config cfg)
 {
     game.activeCam = camera_create();
-    game.currentMap = map_load(cfg.dataPath);
-    game.currentCar = car_load("../data/car1.dat");
+    game.currentMap = map_load(cfg.baseDataPath);
+    game.currentCar = car_load("./data/terep/car1.dat");
     game.currentCar->currentSelSeg = 0;
     game.render.wireframe = false;
 }
@@ -53,9 +53,6 @@ Config game_main(Config initialConfig)
                GAME_WINDOW_TITLE);
     SetTargetFPS(60);
     SetExitKey(KEY_CAPS_LOCK);
-
-    // !This is temporary
-    SetWindowPosition(1366, 0);
 
     RenderTexture2D target;
     if (cfg.render.upscaleMultiplier == 1) {
