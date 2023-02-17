@@ -118,7 +118,7 @@ DFMap* map_load(const char* basePath)
     build_map_model(map);
     map->affineShd = LoadShaderFromMemory(affine_vs, affine_fs);
     map->normalShd = map->model.materials[0].shader;
-    map->model.materials[0].maps[MAP_DIFFUSE].texture = map->texture;
+    map->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = map->texture;
     return map;
 }
 void map_unload(DFMap* map)
